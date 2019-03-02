@@ -1,0 +1,224 @@
+<!--具体的房间信息-->
+<style>
+.configue{width: 98%; display: flex;flex-direction: column;border:2rpx solid #dddee1;border-top: 2rpx solid #2d8cf0;margin-top: 10rpx;}
+.item1{width: 100%;height: 100rpx; padding-left: 10rpx;border-bottom:2rpx solid #dddee1; }
+.title{width: 300rpx;height: 60rpx;margin:20rpx;background-color:#dddee1;line-height: 60rpx;display: flex;flex-direction: row;padding:0;align-items: center;}
+.image{width:45rpx;height:40rpx;margin:0 50rpx 0 30rpx;}
+
+.item{width: 100%;height: 80rpx; padding-left: 30rpx;border-bottom:2rpx solid #dddee1;line-height: 80rpx;color:#495060;}
+
+.list{width: 98%; display: flex;flex-direction: column;border:2rpx solid #dddee1;border-top: 2rpx solid #2d8cf0;}
+.list_title{height: 100rpx;background-color: #f8f8f9;display: flex;flex-direction: row;align-items: center;}
+.list_name{width: 38%;text-align:center;}
+.list_time{width: 30%;text-align:center;}
+.list_state{width: 30%;text-align:center;}
+.list_item{height: 80rpx;display: flex;flex-direction: row;align-items: center;}
+.image_state{width: 50rpx;height: 50rpx;}
+</style>
+
+<template>
+  <view class="cu-custom" style="height:{{CustomBar}}px;">
+  <view class="cu-bar fixed gradual-blue" style="height:{{CustomBar}}px;padding-top:{{StatusBar}}px;">
+    <navigator class='action' open-type="navigateBack" delta="1" hover-class="none">
+      <text class='icon-back'></text>房间信息
+    </navigator>
+  </view>
+  </view>
+
+	<view class="container">
+    <!--configue begain-->
+    <view class="configue">
+      <view class="item1">
+        <view class="title">
+          <image class="image" src="./image/configue.png" />
+          配置信息
+        </view>
+      </view>
+      <view class="item"><text space="emsp">房间号      {{roomId}}</text></view>
+      <view class="item"><text space="emsp">房间信息     {{remark}}</text></view>
+    </view>
+    <!--configue end-->
+   <view class="chart">
+     <canvas canvas-id="pieCanvas" class="canvas" style="height:300px"></canvas>
+   </view> 
+   <view class="list">
+     <view class="list_title">
+       <view class="list_name">姓名</view>
+       <view class="list_time">时间</view>
+       <view class="list_state">状态</view>
+     </view>
+     <view class="list_item" wx:for="{{msg}}">
+       <view class="list_name">{{item.name}}</view>
+       <view class="list_time">{{item.times}}</view>
+       <view class="list_state">
+         <image class="image_state" wx:if="{{item.state==0}}" src="./image/noheart.png" />
+         <image class="image_state" wx:if="{{item.state==1}}" src="./image/heart.png" />
+       </view>
+     </view>
+   </view>
+  </view>
+
+
+</template>
+
+
+<script>
+  import wepy from 'wepy'
+  var wxCharts = require('../components/wxcharts-min.js')
+  var pieChart = null;
+
+  export default class RoomMsg extends wepy.page {
+    config = {
+      navigationBarTitleText: '房间信息',
+      usingComponents:{
+      },
+      backgroundTextStyle: "dark",//白色主题启用深色模式，在下拉刷新时才能有白色圆点
+    }
+    components = {
+    }
+
+    mixins = []
+
+    data = {
+     roomId:"",
+     remark:"",
+     online:100,//在听课
+     unonline:0,//看手机
+     msg:[],
+     StatusBar:"",
+     CustomBar:"",
+    }
+
+    computed = {
+      
+    }
+
+    methods = {
+      
+    }
+
+    events = {
+      
+    }
+
+    onLoad(options) {
+      //生命周期函数--监听页面加载
+      //console.log(options)
+      this.getMsg(options.roomId)
+      this.StatusBar=this.$parent.globalData.StatusBar
+      this.CustomBar=this.$parent.globalData.CustomBar
+    }
+
+    onReady(){
+      //生命周期函数--监听页面初次渲染完成
+    }
+
+    onShow(){
+      //生命周期函数--监听页面显示
+      this.$apply()
+    }
+
+    onHide(){
+      //生命周期函数--监听页面隐藏
+    }
+
+    onUnload(){
+      //生命周期函数--监听页面卸载
+    }
+
+    onPullDownRefresh(){
+      //页面相关事件处理函数--监听用户下拉动作
+      this.log("onPullDownRefresh")
+      setTimeout(function(){  wx.stopPullDownRefresh()},1000)
+      if(this.$parent.globalData.roomIds!=""){
+        /*防止从我的记录跳转过来，此时并没有加入房间
+         *this.$parent.globalData.roomIds==""
+         *引起系统错误
+         */
+        this.getMsg(this.$parent.globalData.roomIds)
+      }
+    }
+
+    onReachBottom(){
+      //页面上拉触底事件的处理函数
+    }
+
+    toast(title,icon,duration){
+      //自己封装的Toast函数
+      wx.showToast({
+        title:title,
+        icon: icon,
+        duration:duration
+      })
+    }
+
+    log(res){
+      //自己封装的log函数
+      console.log("roomMsg:  "+res)
+    }
+    
+    getMsg(roomIds){
+      var that=this
+      wx.request({
+        url:  that.$parent.globalData.url + "room/getRoomPeople",
+        method: 'GET',
+        data: { 'roomId':roomIds},
+        header: {
+            "Content-Type": "application/x-www-form-urlencoded"
+        },
+        complete: function (res) {
+            if (res.statusCode != 200) {
+              that.log("网络连接失败！");
+              that.toast("网络连接失败！","none",1500);
+              return;
+            } else {
+              if(res.data==""){
+                that.toast("您的房间没人！","none",1500);
+              }else{
+                console.log(res.data)
+                var msg=new Array()
+                msg=res.data.list
+                that.roomId=res.data.room.remark
+                that.remark=res.data.room.roomNumber
+                var online=0
+                for(var i=0;i<res.data.list.length;i++){
+                  if(msg[i].state==1) {
+                    online++;
+                  }
+                  var str=msg[i].name
+                  if(str.length>6){
+                    //名字太长,中间用两个**代替
+                    var length=str.length
+                    var str1=str[0]+str[1]+"**"+str[length-2]+str[length-1]
+                    msg[i].name=str1
+                  }
+                }
+                that.online=online
+                that.unonline=res.data.list.length-online
+                that.msg=msg
+                that.$apply()
+                that.log(online+"---"+that.data.unonline)
+                pieChart = new wxCharts({
+                    animation: true,
+                    canvasId: 'pieCanvas',
+                    type: 'pie',
+                    series: [{
+                        name: '在听课',
+                        data: that.data.online,
+                        },{
+                        name: '看手机',
+                        data: that.data.unonline,
+                        }],
+                    width: 300,
+                    height: 300,
+                    dataLabel: true,
+                });
+              }
+            }
+        
+        }
+      })
+    }
+    
+  }
+</script>

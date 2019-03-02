@@ -1,0 +1,603 @@
+<!--计时页面-->
+<style>
+.graph{width:400rpx;height: 400rpx;display: flex;flex-direction: column; margin-top: 100rpx; border:8rpx solid #8A2BE2 ;border-radius:50%; align-items: center;}
+.image{width: 150rpx;height: 150rpx;margin-top: 70rpx;}
+.text{margin-top: 50rpx;text-align: center;font-size: 35rpx;background-color: #f1f1f1; color:  #9932CC ;}
+.msg{margin-top: 50rpx;text-align: center;font-size: 35rpx;color:#495060;}
+.result{width:700rpx; display: flex;flex-direction: column;align-items: center;}
+.view1{background-color: #8A2BE2;border-radius: 10rpx;color:#ffffff;padding: 5rpx;font-size: 30rpx;}
+.left_graph{background-color:#9C26B0;margin:10rpx 350rpx 0rpx 50rpx;}
+.right_graph{background-color:#DE9FDC;margin:10rpx 50rpx 0rpx 350rpx;}
+.graph_text{width: 280rpx;height: 50rpx;color: #ffffff;border-radius: 10rpx;text-align: center;line-height: 50rpx;padding-left:20rpx;}
+
+
+/*button animtion css code*/
+[class*=animation-] {
+    animation-duration: .5s;
+    animation-timing-function: ease-out;
+    animation-fill-mode: both
+}
+.animation-shake {
+    animation-name: shake
+}
+.animation-scale-up {
+    animation-name: scale-up
+}
+
+.size{width: 350rpx;height: 70rpx; margin:50rpx 0 35rpx 0;font-size: 35rpx;}
+
+@keyframes scale-up {
+    0% {
+        opacity: 0;
+        transform: scale(.2)
+    }
+
+    100% {
+        opacity: 1;
+        transform: scale(1)
+    }
+}
+@keyframes shake {
+
+    0%,
+    100% {
+        transform: translateX(0)
+    }
+
+    10% {
+        transform: translateX(-9px)
+    }
+
+    20% {
+        transform: translateX(8px)
+    }
+
+    30% {
+        transform: translateX(-7px)
+    }
+
+    40% {
+        transform: translateX(6px)
+    }
+
+    50% {
+        transform: translateX(-5px)
+    }
+
+    60% {
+        transform: translateX(4px)
+    }
+
+    70% {
+        transform: translateX(-3px)
+    }
+
+    80% {
+        transform: translateX(2px)
+    }
+
+    90% {
+        transform: translateX(-1px)
+    }
+}
+
+
+</style>
+
+<template>
+  <view class="cu-custom" style="height:{{CustomBar}}px;">
+  <view class="cu-bar fixed gradual-blue"style="height:{{CustomBar}}px;padding-top:{{StatusBar}}px;">
+    <navigator class="action" open-type="navigateBack" delta=1 hover-class="none">
+      <text class='icon-back'></text>计时
+    </navigator>
+  </view>
+  </view>
+  <view class="container">
+    <view class="graph">
+      <view class='bg-white flex-sub radius shadow-lg image' wx:if="{{state==false}}">
+        <image src='https://image.weilanwl.com/gif/loading-white.gif' mode='aspectFit' class='gif-white response' style='height:150rpx'></image>
+      </view>
+      <view class='bg-white flex-sub radius shadow-lg image' wx:else>
+        <image src='https://image.weilanwl.com/gif/rhomb-white.gif' mode='aspectFit' class='gif-white response' style='height:150rpx'></image>
+      </view>
+      <view class="text">{{msg}}</view>
+    </view>
+    <view class="msg" wx:if="{{state==true}}">有心跳啦...砰...砰...</view>
+    <view class="msg" wx:else>得把手机翻过去才能有心跳啊...</view>
+
+    <!--<button @tap="test">test</button>-->
+    <view wx:if="{{button==true}}">
+      <button class="size cu-btn bg-orange animation-{{animation=='scale-up'? 'scale-up' :''}} basis-sm shadow" bindtap='toggle1' data-class='scale-up' >再来一次</button>
+    </view>
+    <view wx:else>
+      <button class="size cu-btn bg-mauve animation-{{animation=='shake'? 'shake' :''}} basis-sm shadow" bindtap='toggle' data-class='shake' >Stop</button>
+    </view>
+
+    <view class="result">
+      <view class="view1">开始</view>
+      <view wx:for="{{pauseFront}}" class="{{index%2==0 ? 'left_graph graph_text':'right_graph graph_text'}}">{{item}}</view>
+      <!--<view class="left_graph graph_text">left_graph</view>
+      <view class="right_graph graph_text">right_graph</view>
+      <view class="left_graph graph_text">left_graph</view>
+      <view class="right_graph graph_text">right_graph</view>-->
+    </view>
+
+  </view>
+
+</template>
+
+
+<script>
+  import wepy from 'wepy'
+
+  export default class time extends wepy.page {
+    config = {
+      navigationBarTitleText: '听课了',
+      usingComponents:{
+      },
+      backgroundTextStyle: "dark",//白色主题启用深色模式，在下拉刷新时才能有白色圆点
+    }
+    components = {
+    }
+
+    mixins = []
+
+    data = {
+      state:false,
+      msg:"00:00:00",
+      StatusBar:"",
+      CustomBar:"",
+      pauseFront:[],//用于前端显示本次计时的详细情况
+      dates:"",//年月日
+      begain:"",//开始时间
+      ends:"",//结束时间
+      times:"",//总时间
+      timestamp:0,//每一阶段内的总的计时时间戳
+      timestamp1:0,//整个计时过程的计时时间戳
+      begain_timestamp:0,//每一阶段开始的时间戳
+      stop_timestamp:0,//每一阶段停止的时间戳
+      sec:0,//本次计时统计的秒数
+      min:0,//本次计时统计的分钟数
+      hou:0,//本次计时统计的小时数
+      pause:0,//暂停次数
+      pauseMsg:"",//记录每次暂停的详细信息，形式如12:34-12:44&12:46-12:55，小时:分钟-小时:分钟
+      mins:0,//设定的变量，用来控制向后台发送我还在线
+      animation:"",
+      button:false,//是否显示开始键
+    }
+
+    computed = {
+      
+    }
+
+    methods = {
+      test(){
+        this.state=!this.data.state
+      },
+      toggle(e) {
+        //按stop
+        //console.log(e);
+        var anmiaton = e.currentTarget.dataset.class;
+        var that = this;
+        that.animation=anmiaton
+        that.$apply()
+        setTimeout(function() {
+         that.animation=''
+          that.$apply()
+        }, 1000)
+        that.closeCountDown()
+        setTimeout(function(){
+          that.button=true
+          that.$apply()
+        },800)
+      },
+      toggle1(e) {
+        //按再来一次
+        //console.log(e);
+        var anmiaton = e.currentTarget.dataset.class;
+        var that = this;
+        that.animation=anmiaton
+        that.pauseFront=[]
+        that.msg="00:00:00"
+
+        //对that.data.begain重新赋值
+        var date = new Date();
+        that.data.begain = date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds();
+
+        that.$apply()
+        setTimeout(function() {
+         that.animation=''
+          that.$apply()
+        }, 1000)
+        wx.startAccelerometer()
+        setTimeout(function(){
+          that.button=false
+          that.$apply()
+        },800)
+      }
+    }
+
+    events = {
+      
+    }
+
+    onLoad(options) {
+      //生命周期函数--监听页面加载
+      this.StatusBar=this.$parent.globalData.StatusBar
+      this.CustomBar=this.$parent.globalData.CustomBar
+    }
+
+    onReady(){
+      //生命周期函数--监听页面初次渲染完成
+
+      /*
+       *wepy的数据传递采用脏数据检查的形式
+       *即便利用this.$Apply()也有延迟
+       *但直接使用this.data.***可不用脏数据检查
+       *但不能更新前端界面
+       **/
+
+      var that = this;
+      var date = new Date();
+      var mon = date.getMonth() + 1;
+      that.data.dates = date.getFullYear() + "."+ mon +"."+ date.getDate();
+      console.log(that.data.dates)
+      that.data.begain = date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds();
+
+      wx.onAccelerometerChange(function (res) {
+       if (res.z >= 0) {
+         //手机翻过去
+         if (that.data.state == false) {
+           //手机翻过去的那一瞬间
+           that.state=true
+           that.$apply()
+           that.data.begain_timestamp = (new Date()).valueOf();
+           //得到这一次开始的时间信息
+           date=new Date()
+           that.data.pauseMsg = that.data.pauseMsg + date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds() + "-";
+           console.log("begain")
+
+           if(that.data.stop_timestamp!=0){
+            //表示又重新将手机屏幕向下了，添加暂停时间的提示
+            var t=that.data.begain_timestamp-that.data.stop_timestamp
+            date=new Date(t)
+            var ti="暂停 "+date.getMinutes()+"分 "+date.getSeconds()+"秒"
+            var front=that.data.pauseFront
+            front.push(ti)
+            that.pauseFront=front
+            that.$apply()
+           }
+           
+           that.online();
+         }
+         //更新时间统计数据
+         that.data.stop_timestamp = (new Date()).valueOf();
+         that.data.timestamp = that.data.stop_timestamp - that.data.begain_timestamp;
+
+         var k = that.data.timestamp1 + that.data.timestamp;
+         date=new Date(k)
+         that.data.sec = date.getSeconds();
+         that.data.min = date.getMinutes();
+         var h = date.getHours();
+         //由于时间戳之间的运算没有考虑时差，date.getHours()的值总提前8个小时
+         if(h>=8){h-=8}else{h+=16}
+         that.data.hou=h
+         //console.log(that.data.timestamp1+":"+that.data.timestamp+":"+new Date(10800000).getHours())
+
+         //持续更新界面的时间 
+         var a=""
+         var b=""
+         var c=""
+         //以下三个for循环意味构造形如"00:00:00"的信息提示
+         //再次将a.b.c的值赋给hou.min.sec是因为在提交信息到后台时需要统一格式
+         //这里本身不需要将a.b.c赋值，但为了安全起见，也赋值一下
+         if(that.data.hou==0) {a="00"}
+         else if(that.data.hou>0 && that.data.hou<10){a="0"+that.data.hou}
+         else{a=that.data.hou}
+
+         if(that.data.min==0) {b="00"}
+         else if(that.data.min>0 && that.data.min<10){b="0"+that.data.min}
+         else{b=that.data.min}
+
+         if(that.data.sec==0) {c="00"}
+         else if(that.data.sec>0 && that.data.sec<10){c="0"+that.data.sec}
+         else{c=that.data.sec}
+
+         that.msg=a+":"+b+":"+c
+         that.$apply()
+
+         //每3分钟发送一次我还在线
+         if(that.data.min>=that.data.mins+3){
+           that.data.mins=that.data.min;
+           that.online();
+           if(that.data.mins>=56) {that.data.mins=0}
+         }
+       } else if (res.z < 0 && that.data.state == true) {
+         //手机翻过来的这一刻
+         console.log("suspend---");
+
+         that.suspend();
+
+         that.state=false
+         that.$apply()
+         that.data.pause++
+
+         //得到这一阶段结束的时间信息
+         date=new Date()
+         that.data.pauseMsg = that.data.pauseMsg + date.getHours() + ":" +date.getMinutes() + ":" + date.getSeconds() + "&";
+
+         //更新时间统计数据
+         that.data.stop_timestamp = (new Date()).valueOf();
+         that.data.timestamp = that.data.stop_timestamp - that.data.begain_timestamp;
+         that.data.timestamp1 = that.data.timestamp1 + that.data.timestamp;
+         date=new Date(that.data.timestamp1)
+         that.data.sec = date.getSeconds();
+         that.data.min = date.getMinutes();
+         var h = date.getHours();
+         //由于时间戳之间的运算没有考虑时差，date.getHours()的值总提前8个小时
+         if(h>=8){h-=8}else{h+=16}
+         that.data.hou=h
+
+         if(that.data.begain_timestamp!=0){
+          //表示手机屏幕已从向下变为向上，添加一个计时周期时间的提示
+            var t=that.data.stop_timestamp-that.data.begain_timestamp
+            date=new Date(t)
+            var h = date.getHours();
+             //由于时间戳之间的运算没有考虑时差，date.getHours()的值总提前8个小时
+             if(h>=8){h-=8}else{h+=16}
+
+             //如果有小时数则给与小时数的提示
+             if(h!=0){
+              var ti="专注 "+h+"小时 "+date.getMinutes()+"分 "+date.getSeconds()+"秒"
+              var front=that.data.pauseFront
+              front.push(ti)
+              that.pauseFront=front
+              that.$apply()
+             }else{
+              var ti="专注 "+date.getMinutes()+"分 "+date.getSeconds()+"秒"
+              var front=that.data.pauseFront
+              front.push(ti)
+              that.pauseFront=front
+              that.$apply()
+             }
+           }
+
+         //持续更新界面的时间
+         var a=""
+         var b=""
+         var c=""
+         //以下三个for循环意味构造形如"00:00:00"的信息提示
+         //再次将a.b.c的值赋给hou.min.sec是因为在提交信息到后台时需要统一格式
+         if(that.data.hou==0) {a="00"}
+         else if(that.data.hou>0 && that.data.hou<10){a="0"+that.data.hou}
+         else{a=that.data.hou}
+          that.data.hou=a
+
+         if(that.data.min==0) {b="00"}
+         else if(that.data.min>0 && that.data.min<10){b="0"+that.data.min}
+         else{b=that.data.min}
+          that.data.min=b
+
+         if(that.data.sec==0) {c="00"}
+         else if(that.data.sec>0 && that.data.sec<10){c="0"+that.data.sec}
+         else{c=that.data.sec}
+          that.data.sec=c
+
+         that.msg=a+":"+b+":"+c
+         that.$apply()
+        
+       }
+
+     });
+    }
+
+    onShow(){
+      //生命周期函数--监听页面显示
+      var that=this
+      //这个函数放sendMsg函数里会有延迟错误
+      wx.getNetworkType({
+        success(res) {
+          that.$parent.globalData.netWorkType = res.networkType;
+        },
+        fail(res) {
+          console.log("netWorkType get failed...");
+          that.$parent.globalData.netWorkType ="unknow"
+        }
+      });
+    }
+
+      //生命周期函数--监听页面隐藏
+
+    onHide(){
+      //手机屏幕熄灭也会触onHide
+      //this.log("time hide")
+      //this.closeCountDown();
+    }
+
+    onUnload(){
+      //生命周期函数--监听页面卸载
+      this.closeCountDown();
+    }
+
+    onPullDownRefresh(){
+      //页面相关事件处理函数--监听用户下拉动作
+      this.log("onPullDownRefresh")
+      setTimeout(function(){  wx.stopPullDownRefresh()},1000)
+    }
+
+    onReachBottom(){
+      //页面上拉触底事件的处理函数
+    }
+
+    toast(title,icon,duration){
+      //自己封装的Toast函数
+      wx.showToast({
+        title:title,
+        icon: icon,
+        duration:duration
+      })
+    }
+
+    log(res){
+      //自己封装的log函数
+      console.log("time:  "+res)
+    }
+
+    closeCountDown(){
+      //停止计时，刷新状态
+      wx.stopAccelerometer();
+      console.log("stop")
+      console.log(this.data.dates)
+
+      //得到这一次结束的时间信息
+      //this.data.pauseMsg = this.data.pauseMsg + new Date().getHours() + ":" + new Date().getMinutes();
+
+      this.data.pause--;
+      if(this.data.pause<0)  this.data.pause=0;
+      var date = new Date();
+      this.data.ends = date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds();
+      this.data.times=this.data.hou+":"+this.data.min+":"+this.data.sec;
+      
+      //没开始的情况下按暂停，给个提醒，不干啥
+      if (this.data.min==0 && this.data.sec==0 && this.data.hou==0){
+        this.msg="老铁，都不开始下的吗_><_,扎心了！"
+        this.$apply()
+        return;
+      }else{
+        this.sendMsg();
+      }
+
+      this.data.dates=""
+      this.data.ends=""
+      this.data.times=""
+      this.data.stop_timestamp=0;
+      this.data.timestamp=0;
+      this.data.timestamp1 = 0;
+      this.data.begain_timestamp=0;
+      this.data.sec=0;
+      this.data.min=0;
+      this.data.hou=0;
+      this.data.pause=0;
+      this.data.pauseMsg=""
+      this.data.mins=0
+      console.log("end!!!")
+  }
+
+
+  sendMsg(){
+    console.log("sendMsg")
+    console.log(this.data.pauseMsg)
+    console.log(this.data.dates)
+    var that=this
+    var app=this.$parent
+    //console.log("app.globalData.roomId:"+app.globalData.roomId)
+    wx.request({
+      url: app.globalData.url + "time/endTime",
+      method: 'POST',
+      data: {
+        'openId': app.globalData.openId,
+        "dates": this.data.dates,
+        "begain": this.data.begain,
+        "ends": this.data.ends,
+        "pause": this.data.pause,
+        "times": this.data.times,
+        "pauseMsg":this.data.pauseMsg,
+        "roomId": app.globalData.roomIds,
+        "netWorkType": app.globalData.netWorkType,
+        
+      },
+      header: {
+        "Content-Type": "application/x-www-form-urlencoded"
+      },
+      complete: function (res) {
+        if (res.statusCode != 200) {
+          that.log("网络传输有错误！");
+          that.toast("网络连接失败！","",1500)
+        } else if(res.data==""){
+          that.toast("服务器出错！","",700)
+        }else{
+          that.log("本次计时信息已经上传！---" + res.data.status);
+           that.toast("信息已保存远端","success",1000)
+        }
+      }
+    })
+  }
+
+  online(){
+    console.log("online")
+    var app=this.$parent
+    var that=this
+    //前端每三分钟发一次，后台五分钟没收到online信号，即视为已不在线
+    
+    /**
+     * 可能是微信小程序的bug，
+     * 这里不添加一个标志位控制，
+     * 每次发送的次数就会随着
+     * 开始次数的增多而累加
+     */
+    //if(app.globalData.flag==true){
+      ///app.globalData.flag =false;
+
+      //开始,若进入了房间，向后台报告我已上线
+      if (app.globalData.roomIds == 1) {
+        return;
+      } else {
+        wx.request({
+          url: app.globalData.url + "time/online",
+          method: 'POST',
+          data: {
+            'openId': app.globalData.openId
+          },
+          header: {
+            "Content-Type": "application/x-www-form-urlencoded"
+          },
+          complete: function (res) {
+            if (res.statusCode != 200) {
+              that.log("网络传输有错误！");
+            } else{
+              that.log("开始，向后台报告成功！");
+            }
+          }
+        });
+      }
+    //}
+    
+    
+  }
+
+  suspend(){
+    console.log("suspend")
+    var app=this.$parent
+    var that=this
+    //if(app.globalData.flag==false){
+      //app.globalData.flag=true;
+
+      //暂停,若进入了房间，向后台报告我已下线
+      if (app.globalData.roomIds == 1) {
+        return;
+      } else {
+
+        wx.request({
+          url: app.globalData.url + "time/suspend",
+          method: 'POST',
+          data: {
+            'openId': app.globalData.openId
+          },
+          header: {
+            "Content-Type": "application/x-www-form-urlencoded"
+          },
+          complete: function (res) {
+            if (res.statusCode != 200) {
+              that.log("网络传输有错误！");
+            } else {
+              that.log("暂停，向后台报告成功！");
+            }
+          }
+        });
+
+      }
+   // }
+  }
+    
+  }
+</script>

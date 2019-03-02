@@ -1,0 +1,253 @@
+<!--我的记录-->
+<style>
+.button{margin-top: 50rpx;width: 50%;background-color: #19be6b;color: #495060;}
+.work{margin-top: 60rpx;width: 90%;height: 800rpx;background-color: #f8f8f9;}
+.page{width: 90%;height:100rpx;margin-top: 30rpx;}
+
+.year{width:180rpx;font-size: 45rpx;background-color:#45c8af;padding-left: 55rpx;margin:20rpx 0 0 50rpx;}
+.month{width: 100rpx;margin-left: 40rpx;margin-top: 10rpx;background-color: #45c8af;border-radius:10rpx;padding-left:25rpx;}
+.day_item{display: flex;flex-direction: row;font-size: 30rpx;margin-bottom: 10rpx; padding-top: 10rpx;}
+.day{padding-left: 55rpx;width:100rpx;border-right:5rpx solid rgb(21, 77, 87)}
+.view1{width:80rpx;margin-left: 20rpx;}
+.view2{width:200rpx;margin-left: 20rpx;}
+</style>
+
+<template>
+  <view class="cu-custom" style="height:{{CustomBar}}px;">
+  <view class="cu-bar fixed gradual-blue" style="height:{{CustomBar}}px;padding-top:{{StatusBar}}px;">
+    <navigator class='action' open-type="navigateBack" delta="1" hover-class="none">
+      <text class='icon-back'></text>我的记录
+    </navigator>
+  </view>
+  </view>
+
+	<view class="container">
+    <!--<button class="button" @tap="iCreateRoom">我创建的房间</button>-->
+   <view class="work">
+    <view wx:for="{{msg}}">
+      <view class="year" wx:if="{{item[0]!=0}}" >{{item[0]}}</view>
+      <view class="month" wx:if="{{item[1]!=0}}"  >{{item[1]}}</view>
+      <view class="day_item" >
+          <view class="day" >{{item[2]}}</view>
+          <view class="view1">专注</view>
+          <view class="view2">{{item[3]}}-{{item[4]}}</view>
+          <view class="view1" style="width:110rpx;">{{item[5]}}</view>
+          <view class="view1">{{item[6]}}次</view>
+      </view>
+    </view>
+   </view>
+   <view class="page">
+      <i-page current="{{current}}" total="{{totalpages}}" bind:change="handleChange">
+        <view slot="prev">
+            <i-icon type="return"></i-icon>
+            上一页
+        </view>
+        <view slot="next">
+            下一页
+            <i-icon type="enter"></i-icon>
+        </view>
+      </i-page>
+   </view> 
+  </view>
+
+
+</template>
+
+
+<script>
+  import wepy from 'wepy'
+
+  export default class MyRecord extends wepy.page {
+    config = {
+      navigationBarTitleText: '我的记录',
+      usingComponents:{
+         "i-page": "../ui/iview/page/index"
+      },
+      backgroundTextStyle: "dark",//白色主题启用深色模式，在下拉刷新时才能有白色圆点
+    }
+    components = {
+    }
+
+    mixins = []
+
+    data = {
+     current: 1,//当前页数
+     totalpages:1,//总页数
+     totalElements:0,//总记录数
+     msg:[],
+     StatusBar:"",
+     CustomBar:"",
+    }
+
+    computed = {
+      
+    }
+
+    methods = {
+      iCreateRoom(){
+        this.$navigate({url:"./myRoomRecord"})
+      },
+      handleChange ({ detail }) {
+        const type = detail.type;
+        if (type === 'next') {
+            this.current=this.data.current+1
+            this.log(this.data.current)
+            this.getMsg()
+        } else if (type === 'prev') {
+            this.current=this.data.current-1
+            this.log(this.data.current)
+            this.getMsg()
+        }
+      }
+    }
+
+    events = {
+      
+    }
+
+    onLoad(options) {
+      //生命周期函数--监听页面加载 
+      this.getMsg()
+      this.StatusBar=this.$parent.globalData.StatusBar
+      this.CustomBar=this.$parent.globalData.CustomBar
+    }
+
+    onReady(){
+      //生命周期函数--监听页面初次渲染完成
+    }
+
+    onShow(){
+      //生命周期函数--监听页面显示
+    }
+
+    onHide(){
+      //生命周期函数--监听页面隐藏
+    }
+
+    onUnload(){
+      //生命周期函数--监听页面卸载
+    }
+
+    onPullDownRefresh(){
+      //页面相关事件处理函数--监听用户下拉动作
+      this.log("onPullDownRefresh")
+      setTimeout(function(){  wx.stopPullDownRefresh()},1000)
+      this.getMsg()
+    }
+
+    onReachBottom(){
+      //页面上拉触底事件的处理函数
+      //this.log("onReachBottom--"+this.page)
+      //this.page++
+    }
+
+    toast(title,icon,duration){
+      //自己封装的Toast函数
+      wx.showToast({
+        title:title,
+        icon: icon,
+        duration:duration
+      })
+    }
+
+    log(res){
+      //自己封装的log函数
+      console.log("myRecord:  "+res)
+    }
+
+    getMsg(){
+      var that=this;
+      this.msg=new Array()
+      this.$apply()
+      wx.request({
+        url: that.$parent.globalData.url + "user/myRecord",
+        method: 'GET',
+        data: { 'openId': that.$parent.globalData.openId,
+                  'pageNum':that.data.current-1 },
+        header: {
+          "Content-Type": "application/x-www-form-urlencoded"
+        },
+        complete: function (res) {
+          if (res.statusCode != 200) {
+            that.log("网络连接失败！");
+            that.toast("网络连接失败！","none",1000);
+            return;
+          }else{
+            if(res.data==""){
+              //服务器返回的是null
+              that.msg=[]
+              that.$apply()
+              return
+            }
+            console.log(res.data);
+            that.totalElements=res.data.totalElements
+            that.totalpages=res.data.totalPages
+            var i = res.data.content.length;
+            var msg = new Array(i);
+            if(i!=0){
+              var k = res.data.content[0].dates.split(".")[0];
+              //var t = res.data.content[0].dates.split(".")[1];
+              var t = 100
+            }
+            for (var j = 0; j < i; j++) {
+                msg[j] = new Array(7)
+                //year,month,date,begain,ends,times,pause
+
+                var dates = res.data.content[j].dates.split(".");
+                var begain = res.data.content[j].begain.split(":");
+                var ends = res.data.content[j].ends.split(":");
+                var times = res.data.content[j].times;
+                var pause = res.data.content[j].pause;
+
+                //只有当每一个新的年份第一次出现时，
+                //msg[j][0]才置位该年份
+                //否则为0，表示同上
+
+                if (dates[0] == k) {
+                    k--;
+                    msg[j][0] = dates[0];
+
+                } else {
+                    msg[j][0] = 0;
+                }
+
+                //只有当每一个新的月份第一次出现时，
+                //msg[j][1]才置位该月份
+                //否则为0，表示同上
+                console.log(dates[1]+"---"+t)
+                if (dates[1] != t) {
+                    //t--;
+                    //msg[j][1] = dates[1];
+                    msg[j][1] = dates[1];
+                    t=dates[1]
+                } else {
+                    msg[j][1] = 0;
+                }
+
+                //当t=0时应该置t=12，表示当年一月份后的下一个月份应但是次年12月
+                if(t==0) {t=12;}
+
+                msg[j][2] = dates[2];
+                msg[j][3] = begain[0] + ":" + begain[1];
+                msg[j][4] = ends[0] + ":" + ends[1];
+                msg[j][5] = times;
+                msg[j][6] = pause;
+
+            }
+            console.log(msg);
+
+            that.msg=msg
+            that.$apply()
+            //console.log(that.data.msg)
+
+          }
+           
+
+          }
+
+      })
+    }
+    
+    
+  }
+</script>

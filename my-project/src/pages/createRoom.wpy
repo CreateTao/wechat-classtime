@@ -1,0 +1,240 @@
+<!--创建房间页面-->
+<style>
+  .notice{flex:1;background-color:#99cc67;color:#fefced;padding:10rpx;text-items: center;border-radius: 15rpx;margin-top: 80rpx;padding-left: 20rpx;font-size: 38rpx;}
+
+  .form{margin-top: 80rpx;}
+
+  .button1{background-color:#45c8af;border-radius:40rpx;margin-top: 80rpx;width:250rpx;}
+</style>
+
+<template>
+  <view class="cu-custom" style="height:{{CustomBar}}px;">
+  <view class="cu-bar fixed gradual-blue" style="height:{{CustomBar}}px;padding-top:{{StatusBar}}px;">
+    <navigator class='action' open-type="navigateBack" delta="1" hover-class="none">
+      <text class='icon-back'></text>创建房间
+    </navigator>
+  </view>
+  </view>
+	<view class="container">
+    <view class="notice" wx:if="{{roomId!=''}}">您的房间号为:{{roomId}}</view>
+
+    <form bindsubmit="create" class="form">
+      <input class="input" name="remark" type="text" placeholder="{{pla1}}"/>
+      <input type="text" name="number" class="input" placeholder="{{pla2}}"/>
+      <button class="button1" form-type="submit">创建</button>
+    </form> 
+
+    <view class="introduce">
+      <view class="title">如何使用</view>
+      <view class="text">房间备注可以是课程名或者您自定义的信息</view>
+      <view class="text">您也可以不输入房间备注</view>
+      <view class="text">房间号你可以输入1000-9999之间的任意数</view>
+      <view class="text">房间号你也可以不输入，我们给您生成三位房间号</view>
+      <view class="text">假若您已进入房间，创建成功后会退出该房间</view>
+      <view class="text">创建成功会返回房间号码，其他用户凭此号码可进入您的房间</view>
+    </view>
+
+    <i-modal title="注意" visible="{{visible1}}" bind:ok="confirm" bind:cancel="cancel">
+      <view>您将退出该房间并新建房间！</view>
+      <view>确定这样吗！</view>
+    </i-modal>
+  </view>
+
+
+</template>
+
+
+<script>
+  import wepy from 'wepy'
+
+  export default class CreateRoom extends wepy.page {
+    config = {
+      navigationBarTitleText: '新建房间',
+      usingComponents:{
+        "i-input": "../ui/iview/input/index",
+        "i-modal": "../ui/iview/modal/index"
+      },
+      backgroundTextStyle: "dark",//白色主题启用深色模式，在下拉刷新时才能有白色圆点
+    }
+    components = {
+    }
+
+    mixins = []
+
+    data = {
+     roomId:"",
+     pla1:"课程名或备注信息",
+     pla2:"房间号 **可选项",
+     visible1:false,
+     remark:"",
+     number:"",
+     StatusBar:"",
+     CustomBar:"",
+    }
+
+    computed = {
+      
+    }
+
+    methods = {
+      create(res){
+        //console.log(res)
+        var remark=res.detail.value.remark
+        var number=res.detail.value.number
+        //remark若没有指定，则指定默认值
+        if (remark == null || remark == "") remark="未说明备注信息";       
+        //查看number是否符合规范
+        if(number !=""){
+          if(!this.$parent.isNumber(number)){
+            this.toast("房间号必须为1000-9999的数字","none",2000)
+            return
+          }else if (number >= 1000 && number <= 9999) {
+            this.log("remark:"+remark+"  number:"+number)
+          } else {
+            this.toast("房间号必须为1000-9999的数字","none",2000)
+            return
+          }
+        }else{
+          //表示用户没有指定房间号
+          number=0;
+          this.log("remark:"+remark+"  number:"+number)
+        }
+
+        if(this.data.roomId!=""){
+          //已加入房间，给与退出提示
+          this.visible1=true
+          this.remark=remark
+          this.number=number
+          this.$apply()
+        }else{
+          //直接想后台发送请求，创建房间
+          this.remark=remark
+          this.number=number
+          this.$apply()
+          this.request()
+        }
+      },
+      confirm(){
+        this.visible1=false
+        this.request()
+      },
+      cancel(){
+        this.visible1=false
+      }
+    }
+
+    events = {
+      
+    }
+
+    onLoad(options) {
+      //生命周期函数--监听页面加载
+      this.StatusBar=this.$parent.globalData.StatusBar
+      this.CustomBar=this.$parent.globalData.CustomBar
+    }
+
+    onReady(){
+      //生命周期函数--监听页面初次渲染完成
+    }
+
+    onShow(){
+      //生命周期函数--监听页面显示
+      this.roomId=this.$parent.globalData.roomId
+      this.$apply()
+      if(this.data.roomId!=""){
+        this.pla1=this.$parent.globalData.remark
+        this.pla2="当前房间码号："+this.data.roomId
+      }else{
+        this.pla1="课程名或备注信息"
+        this.pla2="房间号 **可选项"
+      }
+    }
+
+    onHide(){
+      //生命周期函数--监听页面隐藏
+    }
+
+    onUnload(){
+      //生命周期函数--监听页面卸载
+    }
+
+    onPullDownRefresh(){
+      //页面相关事件处理函数--监听用户下拉动作
+      this.log("onPullDownRefresh")
+      setTimeout(function(){  wx.stopPullDownRefresh()},1000)
+    }
+
+    onReachBottom(){
+      //页面上拉触底事件的处理函数
+    }
+
+    toast(title,icon,duration){
+      //自己封装的Toast函数
+      wx.showToast({
+        title:title,
+        icon: icon,
+        duration:duration
+      })
+    }
+
+    log(res){
+      //自己封装的log函数
+      console.log("createRoom    "+res)
+    }
+
+    request(){
+      var remark=this.data.remark
+      var number=this.data.number
+      var that=this
+      wx.request({
+        url: that.$parent.globalData.url + "room/createRoom",
+        method: 'POST',
+        data: {
+          "remark":remark,
+          "number":number,
+          "openId":that.$parent.globalData.openId
+        },
+        header: {
+          "Content-Type": "application/x-www-form-urlencoded"
+        },
+        complete: function (res) {
+          console.log(res.data)
+          if (res.statusCode != 200) {
+            that.log("网络传输有错误！");
+            that.toast("网络出错了！","none",1000)
+          } else {
+            if(res.data==""){
+              that.toast("服务器出错！","none",1000)
+            }else if(res.data.status == 0){
+              //表示房间号由系统建立
+              that.log("your room number :  "+res.data.number);
+              that.roomId=res.data.number
+              that.pla1=remark
+              that.pla2="当前房间号为："+res.data.number
+              that.$parent.globalData.roomId=res.data.number
+              that.$parent.globalData.remark=remark
+              that.$parent.globalData.roomIds=res.data.roomId
+              that.toast("房间创建成功！","none",1000)
+            } else if (res.data.status == 1){
+              //根据用户输入建立了房间
+              that.log("your room number :  "+res.data.number);
+              that.roomId=res.data.number
+              that.pla1=remark
+              that.pla2="当前房间号为："+res.data.number
+              that.$parent.globalData.roomId=res.data.number
+              that.$parent.globalData.remark=remark
+              that.$parent.globalData.roomIds=res.data.roomId
+              that.toast("房间创建成功！","none",1000)
+            } else if (res.data.status == 2){
+              //用户输入的房间号正在使用
+              that.toast("你输入的房间号已被使用！","none",2000)
+            }
+            that.$apply()
+          }
+        }
+      })
+    }
+    
+    
+  }
+</script>

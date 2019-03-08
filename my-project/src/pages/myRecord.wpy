@@ -36,18 +36,21 @@
       </view>
     </view>
    </view>
-   <view class="page">
-      <i-page current="{{current}}" total="{{totalpages}}" bind:change="handleChange">
-        <view slot="prev">
-            <i-icon type="return"></i-icon>
-            上一页
-        </view>
-        <view slot="next">
-            下一页
-            <i-icon type="enter"></i-icon>
-        </view>
-      </i-page>
-   </view> 
+
+   <view class="record-bottom">
+    <view class="re-bo-item" bindtap="last">
+      <view class='icon-back lg text-gray' ></view>
+      <view >上一页</view>
+    </view>
+    <view class="re-bo-item" style="margin-left:200rpx;">
+      {{current}}/{{total}}
+    </view>
+    <view class="re-bo-item" style="margin-left:200rpx;"  bindtap="next">
+      <view class='icon-right lg text-gray'></view>
+      <view >下一页</view>
+    </view>
+  </view>
+     
   </view>
 
 
@@ -61,8 +64,8 @@
     config = {
       navigationBarTitleText: '我的记录',
       usingComponents:{
-         "i-page": "../ui/iview/page/index"
       },
+      enablePullDownRefresh: true,//开启下拉刷新 
       backgroundTextStyle: "dark",//白色主题启用深色模式，在下拉刷新时才能有白色圆点
     }
     components = {
@@ -72,7 +75,7 @@
 
     data = {
      current: 1,//当前页数
-     totalpages:1,//总页数
+     total:1,//总页数
      totalElements:0,//总记录数
      msg:[],
      StatusBar:"",
@@ -87,16 +90,20 @@
       iCreateRoom(){
         this.$navigate({url:"./myRoomRecord"})
       },
-      handleChange ({ detail }) {
-        const type = detail.type;
-        if (type === 'next') {
-            this.current=this.data.current+1
-            this.log(this.data.current)
-            this.getMsg()
-        } else if (type === 'prev') {
-            this.current=this.data.current-1
-            this.log(this.data.current)
-            this.getMsg()
+      last(){
+        //上一页
+        if(this.data.current > 1){
+          this.current=this.data.current-1
+          this.log(this.data.current)
+          this.getMsg()
+        }
+      },
+      next(){
+        //下一页
+        if(this.data.current < this.data.total){
+          this.current=this.data.current+1
+          this.log(this.data.current)
+          this.getMsg()
         }
       }
     }
@@ -112,22 +119,6 @@
       this.CustomBar=this.$parent.globalData.CustomBar
     }
 
-    onReady(){
-      //生命周期函数--监听页面初次渲染完成
-    }
-
-    onShow(){
-      //生命周期函数--监听页面显示
-    }
-
-    onHide(){
-      //生命周期函数--监听页面隐藏
-    }
-
-    onUnload(){
-      //生命周期函数--监听页面卸载
-    }
-
     onPullDownRefresh(){
       //页面相关事件处理函数--监听用户下拉动作
       this.log("onPullDownRefresh")
@@ -135,11 +126,6 @@
       this.getMsg()
     }
 
-    onReachBottom(){
-      //页面上拉触底事件的处理函数
-      //this.log("onReachBottom--"+this.page)
-      //this.page++
-    }
 
     toast(title,icon,duration){
       //自己封装的Toast函数
@@ -181,7 +167,7 @@
             }
             console.log(res.data);
             that.totalElements=res.data.totalElements
-            that.totalpages=res.data.totalPages
+            that.total=res.data.totalPages
             var i = res.data.content.length;
             var msg = new Array(i);
             if(i!=0){

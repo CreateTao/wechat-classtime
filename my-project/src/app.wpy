@@ -17,6 +17,10 @@
 color:#6a6f77;padding:10rpx;text-align:center;width: 500rpx;height: 80rpx;
 line-height: 80rpx;}
 
+/*用来做记录展示页底部的分页框*/
+ .record-bottom{width: 700rpx;height: 50rpx;display: flex;flex-direction: row;align-items: center;margin-top: 30rpx;}
+.re-bo-item{width: 100rpx;height: 50rpx;display: flex;flex-direction: column;align-items: center;}
+
 </style>
 
 <script>
@@ -27,6 +31,7 @@ import 'wepy-async-function'
 export default class extends wepy.app {
   config = {
     pages: [
+    'pages/index2',
       'pages/index',
       'pages/identity',
       'pages/createRoom',
@@ -36,7 +41,8 @@ export default class extends wepy.app {
       'pages/roomMsg',
       'pages/time',
       'pages/test',
-      'pages/index2'
+      'pages/record',
+      'pages/ranking'
     ],
     window: {
       backgroundTextStyle: 'light',
@@ -44,7 +50,7 @@ export default class extends wepy.app {
       navigationBarTitleText: '无机课堂',
       navigationBarTextStyle: 'black',
       navigationStyle:"custom",
-      enablePullDownRefresh: true,//开启下拉刷新 
+      enablePullDownRefresh: false,//开启下拉刷新 
     }
   }
 
@@ -60,8 +66,8 @@ export default class extends wepy.app {
     openId:"",
     netWorkType:"",
     flag:true,//这个标志位用来控制向后台发送的次数
-    StatusBar:"",
-    CustomBar:"",
+    StatusBar:"",//控制上方导航栏的参数
+    CustomBar:"",//控制上方导航栏的参数
     flag:true,//用来控制time中online和suspend的发送
   }
 

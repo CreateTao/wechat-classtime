@@ -1,3 +1,4 @@
+<!--身份绑定-->
 <style>
 .work{margin-top: 100rpx;}
 
@@ -31,9 +32,7 @@ color:#6a6f77;padding:10rpx;text-align:center;}
 	  			<button class="button1" form-type="submit">提交</button>
 	  	</form>
 	  	</view>
-      <i-modal title="删除确认" visible="{{visible}}" actions="{{actions}}"bind:click="query">
-        <view>添加后将不可修改！</view>
-      </i-modal>
+      
 	  </view>
 	  <!--work end-->
 
@@ -48,6 +47,27 @@ color:#6a6f77;padding:10rpx;text-align:center;}
 	</view>
 
 
+  <view class="cu-modal {{modalName=='DialogModal1'?'show':''}}">
+    <view class="cu-dialog">
+      <view class="cu-bar bg-white justify-end">
+        <view class='content'>请确认</view>
+        <view class='action' bindtap="cancel">
+          <text class='icon-close text-red'></text>
+        </view>
+      </view>
+      <view class='padding-xl'>
+        信息提交成功后将不可修改！
+      </view>
+      <view class="cu-bar bg-white justify-end">
+        <view class='action'>
+          <button class='cu-btn line-green text-green' bindtap='cancel'>取消</button>
+          <button class='cu-btn bg-green 'style="margin-left:390rpx;" bindtap='confirm'>确定</button>
+        </view>
+      </view>
+    </view>
+  </view>
+
+
 </template>
 
 
@@ -58,8 +78,8 @@ color:#6a6f77;padding:10rpx;text-align:center;}
     config = {
       navigationBarTitleText: '身份绑定',
       usingComponents:{
-        "i-modal": "../ui/iview/modal/index"
       },
+      enablePullDownRefresh: true,//开启下拉刷新 
       backgroundTextStyle: "dark",//白色主题启用深色模式，在下拉刷新时才能有白色圆点
     }
     components = {
@@ -71,17 +91,7 @@ color:#6a6f77;padding:10rpx;text-align:center;}
     	isbind:true,//是否绑定账号
      	schoolId:"",//学号
      	schoolName:"",//绑定的姓名
-      visible:false,//控制确定选项是否弹出
-      actions: [
-            {
-                name: '取消'
-            },
-            {
-                name: '确定',
-                color: '#ed3f14',
-                loading: false
-            }
-        ],//弹出的确定选项显示内容
+      modalName:"",//控制确定选项是否弹出
       StatusBar:"",
       CustomBar:"",
     }
@@ -119,59 +129,51 @@ color:#6a6f77;padding:10rpx;text-align:center;}
       	var that=this
       	//wx.showLoading({title: '加载中'})
         //弹出确定框
-        this.visible=true
+        this.modalName='DialogModal1'
       	
       },
-      query({ detail }){
-        if (detail.index === 0) {
-            this.visible=false
-        } else {
-            //const action = [...this.data.actions];
-            this.actions[1].loading = true;
-            //向服务器发送信息
-            var that=this
-          wx.request({
-            url: that.$parent.globalData.url+"user/schoolId",
-            method: 'POST',
-            header: {
-              "Content-Type": "application/x-www-form-urlencoded"
-            },
-            data: {
-              openid: that.$parent.globalData.openId,
-              studentId: that.data.schoolId,
-              schoolName:that.data.schoolName
-            },
-            success: function (res) {
-              if(res.data==""){
-                that.Toast("服务器出错！","none",1000)
-              }else if (res.data.status == "yes") {
-                //wx.hideLoading()
-                that.actions[1].loading = false;
-                that.visible=false
-                that.Toast("绑定成功！","success",1000)
-                //更新数据
-                that.isbind=true
-                that.$parent.globalData.isbind=true
-                that.$parent.globalData.schoolId=that.data.schoolId
-                that.$parent.globalData.schoolName=that.data.schoolName
-                that.$apply()
-              } else  {
-                //wx.hideLoading()
-                that.actions[1].loading = false;
-                that.visible=false
-                that.Toast("服务器错误！","none",1000)
-                that.log("绑定失败，返回信息：  " + res.data);
-              }
-            },
-            fail:function(){
+      confirm(){
+        this.modalName=""
+        //向服务器发送信息
+        var that=this
+        wx.request({
+          url: that.$parent.globalData.url+"user/schoolId",
+          method: 'POST',
+          header: {
+            "Content-Type": "application/x-www-form-urlencoded"
+          },
+          data: {
+            openid: that.$parent.globalData.openId,
+            studentId: that.data.schoolId,
+            schoolName:that.data.schoolName
+          },
+          success: function (res) {
+            if(res.data==""){
+              that.Toast("服务器出错！","none",1000)
+            }else if (res.data.status == "yes") {
               //wx.hideLoading()
-              that.action[1].loading = false;
-              that.visible=false
+              that.Toast("绑定成功！","success",1000)
+              //更新数据
+              that.isbind=true
+              that.$parent.globalData.isbind=true
+              that.$parent.globalData.schoolId=that.data.schoolId
+              that.$parent.globalData.schoolName=that.data.schoolName
+              that.$apply()
+            } else  {
+              //wx.hideLoading()
               that.Toast("服务器错误！","none",1000)
-              that.log("fail")
+              that.log("绑定失败，返回信息：  " + res.data);
             }
-          })
-        }
+          },
+          fail:function(){
+            //wx.hideLoading()
+            that.Toast("服务器错误！","none",1000)
+            that.log("fail")
+          }
+        })
+      },
+      cancel(){
+        this.modalName=''
       }
 
     }
@@ -185,10 +187,6 @@ color:#6a6f77;padding:10rpx;text-align:center;}
       this.CustomBar=this.$parent.globalData.CustomBar
     }
 
-    onReady(){
-      //生命周期函数--监听页面初次渲染完成
-    }
-
     onShow(){
       //生命周期函数--监听页面显示
       this.isbind=this.$parent.globalData.isbind
@@ -196,13 +194,6 @@ color:#6a6f77;padding:10rpx;text-align:center;}
       this.schoolName=this.$parent.globalData.schoolName
     }
 
-    onHide(){
-      //生命周期函数--监听页面隐藏
-    }
-
-    onUnload(){
-      //生命周期函数--监听页面卸载
-    }
 
     onPullDownRefresh(){
       //页面相关事件处理函数--监听用户下拉动作
@@ -211,10 +202,6 @@ color:#6a6f77;padding:10rpx;text-align:center;}
       this.schoolId=this.$parent.globalData.schoolId
       this.schoolName=this.$parent.globalData.schoolName
       setTimeout(function(){  wx.stopPullDownRefresh()},1000)
-    }
-
-    onReachBottom(){
-      //页面上拉触底事件的处理函数
     }
 
     Toast(title,icon,duration){

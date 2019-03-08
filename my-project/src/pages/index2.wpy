@@ -1,4 +1,27 @@
+<!--这是主页-->
 <style>
+.userinfo{
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+.userinfo-avatar{
+  width: 100rpx;
+  height: 100rpx;
+  border-radius: 50%;
+  margin-left: 50rpx;
+}
+.userinfo-nickname{
+  margin-left: 250rpx;
+  color: #8799a3;
+  font-size: 35rpx;
+}
+.userinfo-nickname text{
+  color: #fbbd08;
+  font-size: 40rpx;
+}
+
 .index{margin: 100rpx 0 0 0;}
 .card-swiper {
   height: 480rpx;
@@ -33,17 +56,20 @@
   text-align: center;
 }
 
-.index2{margin-top: 100rpx;}
+
 </style>
 
 <template>
-	<view class="cu-custom" style="height:{{CustomBar}}px;">
-  <view class="cu-bar fixed gradual-blue" style="height:{{CustomBar}}px;padding-top:{{StatusBar}}px;">
-    <navigator class='action' open-type="navigateBack" delta="1" hover-class="none">
-      <text class='icon-back'></text>无机课堂
-    </navigator>
+
+  <!--user begain-->
+  <view class="userinfo" style="margin-top:{{CustomBar}}px;">
+    <image class="userinfo-avatar" src="{{ userInfo.avatarUrl }}" background-size="cover"/>
+    <view class="userinfo-nickname">欢迎
+      <text space="emsp"> {{ userInfo.nickName }}</text>
+    </view>
   </view>
-  </view>
+  <!--user end-->
+
 
   <view class="index">
     <swiper class="card-swiper round-dot" indicator-dots="true" circular="true" autoplay="true"  interval="5000" duration="500" bindchange="cardSwiper" indicator-color="#8799a3" indicator-active-color="#0081ff">
@@ -60,13 +86,16 @@
     </swiper>
   </view>
 
-  <view class="index2">
-    <view class="tower-swiper" bindtouchmove="towerMove" bindtouchstart="towerStart" bindtouchend="towerEnd">
-      <view class="tower-item {{item.zIndex==1?'none':''}}" wx:for="{{towerList}}" style='transform: scale({{0.5+item.zIndex/10}});margin-left:{{item.mLeft*100-150}}rpx;z-index:{{item.zIndex}}'>
-        <view class='bg-img shadow-blur' bindtap="choose2" data-type="{{index}}" style="background-image:url({{item.url}})"></view>
-      </view>
-    </view>
+  <!--introduce begain-->
+  <view class="introduce">
+    <view class="title">这是什么</view>
+    <view class="text">“学习时间”：记录手机状态，养成良好学习习惯！</view>
+    <view class="text">“无机课堂”：实时反馈班级状态，教师动态感知上课效率！</view>
+    <view class="text">“现场签到”：省了您打卡签到的麻烦！</view>
+    <view class="text">“排行榜”：全校数据同步，谁与争锋！</view>
+    <view class="text">“我的记录”：查看使用记录信息！</view>
   </view>
+  <!--introduce end-->
 
 
 </template>
@@ -80,7 +109,8 @@
       navigationBarTitleText: '无机课堂',
       usingComponents:{
       },
-      enablePullDownRefresh: false,//开启下拉刷新 
+      enablePullDownRefresh: true,//关闭下拉刷新 
+      backgroundTextStyle: "dark",//白色主题启用深色模式，在下拉刷新时才能有白色圆点
     }
     components = {
     }
@@ -90,11 +120,15 @@
     data = {
      StatusBar:"",
      CustomBar:"",
+     userInfo: {
+        nickName: '加载中...',
+      },
+     flag: true,//控制this.getUserOpenid();函数只执行一次
      cardCur: 0,
      swiperItem:[{
       id:0,
       color:"bg-gradual-blue",
-      name:"学习时间",
+      name:"专注时间",
       icon:"./image/4.png",
       english:"StudyHard"
      },{
@@ -115,32 +149,13 @@
       name:"排行榜",
       icon:"./image/2.png",
       english:"Ranking"
-     }],
-     tower: [{
-        id: 0,
-        url: 'https://image.weilanwl.com/img/4x3-1.jpg'
-      }, {
-        id: 1,
-        url: 'https://image.weilanwl.com/img/4x3-2.jpg'
-      }, {
-        id: 2,
-        url: 'https://image.weilanwl.com/img/4x3-3.jpg'
-        }, {
-          id: 3,
-          url: 'https://image.weilanwl.com/img/4x3-4.jpg'
-        }, {
-          id: 4,
-          url: 'https://image.weilanwl.com/img/4x3-2.jpg'
-        }, {
-          id: 5,
-          url: 'https://image.weilanwl.com/img/4x3-4.jpg'
-        }, {
-          id: 6,
-          url: 'https://image.weilanwl.com/img/4x3-2.jpg'
-      }],
-      towerList:[],
-      direction:"",
-      towerStart:""
+     },{
+      id:4,
+      color:"bg-gradual-orange",
+      name:"我的记录",
+      icon:"./image/5.png",
+      english:"Record"
+     }]
     }
 
     computed = {
@@ -149,101 +164,69 @@
 
     methods = {
       choose(e){
-        console.log(e)
-      },
-      choose2(e){
-        console.log(e)
+        let i=e.currentTarget.dataset.index
+        //console.log(i)
+        switch(i){
+          case 0:
+            //this.log("学习时间");
+            this.$navigate({url:"./time"})
+          break;
+          case 1:
+            //this.log("无机课堂");
+            this.$navigate({url:"./index"})
+          break;
+          case 2:
+            //this.log("现场签到");
+          break;
+          case 3:
+            //this.log("排行榜");
+            this.$navigate({url:"./ranking"})
+          break;
+          case 4:
+            //this.log("记录");
+            this.$navigate({url:"./record"})
+          break;
+        }
       },
     // cardSwiper
     cardSwiper(e) {
       this.cardCur=e.detail.current
-    },
-    // towerSwiper触摸开始
-    towerStart(e) {
-      this.towerStart=e.touches[0].pageX
-      console.log(e.touches[0].pageX)
-    },
-
-    // towerSwiper计算方向
-    towerMove(e) {
-      let i=e.touches[0].pageX - this.data.towerStart
-      this.direction=i > 0 ? 'right' : 'left'
-      //console.log(i)
-    },
-    // towerSwiper计算滚动
-    towerEnd(e) {
-      let direction = this.data.direction;
-      let list = this.data.towerList;
-      if (direction == 'right') {
-        let mLeft = list[0].mLeft;
-        let zIndex = list[0].zIndex;
-        for (let i = 1; i < list.length; i++) {
-          list[i - 1].mLeft = list[i].mLeft
-          list[i - 1].zIndex = list[i].zIndex
-        }
-        list[list.length - 1].mLeft = mLeft;
-        list[list.length - 1].zIndex = zIndex;
-        this.towerList=list
-      } else {
-        let mLeft = list[list.length - 1].mLeft;
-        let zIndex = list[list.length - 1].zIndex;
-        for (let i = list.length - 1; i > 0; i--) {
-          list[i].mLeft = list[i - 1].mLeft
-          list[i].zIndex = list[i - 1].zIndex
-        }
-        list[0].mLeft = mLeft;
-        list[0].zIndex = zIndex;
-        this.towerList=list
-      }
-  }
+    }
       
     }
 
-    events = {
-      
+    events = { 
     }
 
-    onLoad(options) {
+    onLoad(){
       //生命周期函数--监听页面加载
       this.StatusBar=this.$parent.globalData.StatusBar
       this.CustomBar=this.$parent.globalData.CustomBar
-      console.log(this.data.tower)
-      this.towerSwiper('tower');
-      // 初始化towerSwiper 传已有的数组名即可
-      //获取屏幕的宽和高
-      wx.getSystemInfo({
-       success: function (res) {
-        console.log(res.windowWidth+"---"+res.windowHeight)
+      let self = this
+      this.$parent.getUserInfo(function (userInfo) {
+        if (userInfo) { 
+          self.userInfo = userInfo
         }
-      });
-
+        self.$apply() 
+      })
+      //this.$navigate({url:"./ranking"})
     }
 
     onReady(){
       //生命周期函数--监听页面初次渲染完成
+       if (this.data.flag) {
+          this.data.flag = false;
+          //不能放onLoad函数里面，没加载完会报错
+          this.getUserOpenid();
+      }
     }
-
-    onShow(){
-      //生命周期函数--监听页面显示
-    }
-
-    onHide(){
-      //生命周期函数--监听页面隐藏
-    }
-
-    onUnload(){
-      //生命周期函数--监听页面卸载
-    }
-
     onPullDownRefresh(){
       //页面相关事件处理函数--监听用户下拉动作
       this.log("onPullDownRefresh")
-      setTimeout(function(){  wx.stopPullDownRefresh()},1000)
+      this.getUserOpenid()
+      setTimeout(function(){  wx.stopPullDownRefresh()},1500)
     }
 
-    onReachBottom(){
-      //页面上拉触底事件的处理函数
-    }
 
     toast(title,icon,duration){
       //自己封装的Toast函数
@@ -259,15 +242,80 @@
       console.log("index2:  "+res)
     }
     
-    // towerSwiper
-    // 初始化towerSwiper
-    towerSwiper(name) {
-      let list = this.data[name];
-      for (let i = 0; i < list.length; i++) {
-        list[i].zIndex = parseInt(list.length / 2) + 1 - Math.abs(i - parseInt(list.length / 2))
-        list[i].mLeft = i - parseInt(list.length / 2)
-      }
-      this.towerList=list
+    getUserOpenid() {
+      var that = this;
+      wx.login({
+        success: function (res) {
+          that.log("your code is---"+res.code);
+          wx.request({
+            
+            url: that.$parent.globalData.url +"user/getOpenId",
+            method: 'GET',
+            data: { 'code': res.code },
+            header: {
+              "Content-Type": "application/x-www-form-urlencoded"
+            },
+            complete: function (res) {
+              if (res.statusCode != 200) {
+                that.log("res.statusCode != 200");
+                that.toast("服务器出错！","none",1000)
+                return;
+              } else if(res.data==""){
+                that.toast("服务器出错！","none",1000)
+              }else{
+                that.$parent.globalData.openId = res.data.openid;
+                that.log("your openId is---"+that.$parent.globalData.openId);
+                if(res.data.status=="no"){
+                  //没绑定学号
+                  that.$parent.globalData.isbind=false
+                  //that.toast("未绑定学号或姓名!","none",1000);
+                }else{
+                  that.$parent.globalData.isbind=true
+                  that.$parent.globalData.schoolId=res.data.status
+                  that.$parent.globalData.schoolName=res.data.schoolName
+                }
+                //console.log(that.data.userInfo)
+                //console.log(that.data.elements)
+                if(res.data.nickName!=that.data.userInfo.nickName){
+                  //给后台传送一遍昵称
+                  that.addnickName()
+                }
+              }
+            }
+
+          })
+        }
+      });
+    }
+
+    addnickName(){
+      //保存昵称
+      var that=this
+      setTimeout(function(){
+        if(that.data.userInfo.nickName=="加载中..." || that.$parent.globalData.openId==""){
+          //网络没能加载成功，等待一秒钟再试
+          that.addnickName()
+        }else{
+           wx.request({
+            url: that.$parent.globalData.url +"user/addNickName",
+            method: 'POST',
+            data: { 'openId':  that.$parent.globalData.openId,
+                    "nickName":that.data.userInfo.nickName},
+            header: {
+              "Content-Type": "application/x-www-form-urlencoded"
+            },
+            complete: function (res) {
+              if (res.statusCode != 200) {
+                that.log("addNinckNmae res.statusCode != 200"+res);
+                //that.toast("服务器出错！","none",3000)
+                return;
+              } else{
+                that.log("addnickName return successful!")
+              }
+            }
+          })
+        }
+      },1000)
     }
   }
 </script>

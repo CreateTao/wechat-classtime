@@ -1,13 +1,24 @@
 <!--计时页面-->
 <style>
-.graph{width:400rpx;height: 400rpx;display: flex;flex-direction: column; margin-top: 100rpx; border:8rpx solid #8A2BE2 ;border-radius:50%; align-items: center;}
+.not{
+  width: 60%;
+  height: 70rpx;
+  font-size: 38rpx;
+  margin-top: 80rpx;
+  border-radius: 15rpx;
+  line-height: 70rpx;
+  text-align: center;
+  background-color: #0081FF;
+  color: #fff;
+}
+.graph{width:400rpx;height: 400rpx;display: flex;flex-direction: column; border:8rpx solid #8A2BE2 ;border-radius:50%; align-items: center;}
 .image{width: 150rpx;height: 150rpx;margin-top: 70rpx;}
-.text{margin-top: 50rpx;text-align: center;font-size: 35rpx;background-color: #f1f1f1; color:  #9932CC ;}
+.text{margin-top: 50rpx;text-align: center;font-size: 35rpx;background-color: #f1f1f1; color: #9932CC;}
 .msg{margin-top: 50rpx;text-align: center;font-size: 35rpx;color:#495060;}
 .result{width:700rpx; display: flex;flex-direction: column;align-items: center;}
 .view1{background-color: #8A2BE2;border-radius: 10rpx;color:#ffffff;padding: 5rpx;font-size: 30rpx;}
 .left_graph{background-color:#9C26B0;margin:10rpx 350rpx 0rpx 50rpx;}
-.right_graph{background-color:#DE9FDC;margin:10rpx 50rpx 0rpx 350rpx;}
+.right_graph{background-color:#EBD4EF;margin:10rpx 50rpx 0rpx 350rpx;}
 .graph_text{width: 280rpx;height: 50rpx;color: #ffffff;border-radius: 10rpx;text-align: center;line-height: 50rpx;padding-left:20rpx;}
 
 
@@ -93,7 +104,10 @@
   </view>
   </view>
   <view class="container">
-    <view class="graph">
+
+    <view class="not" wx:if="{{roomId!=''}}">您的房间号为：{{roomId}}</view>
+    
+    <view class="graph" style="margin-top:{{graph_top}}rpx;">
       <view class='bg-white flex-sub radius shadow-lg image' wx:if="{{state==false}}">
         <image src='https://image.weilanwl.com/gif/loading-white.gif' mode='aspectFit' class='gif-white response' style='height:150rpx'></image>
       </view>
@@ -135,6 +149,7 @@
       navigationBarTitleText: '听课了',
       usingComponents:{
       },
+      enablePullDownRefresh: false,//关闭下拉刷新 
       backgroundTextStyle: "dark",//白色主题启用深色模式，在下拉刷新时才能有白色圆点
     }
     components = {
@@ -143,6 +158,8 @@
     mixins = []
 
     data = {
+      roomId:"",
+      graph_top:100,//控制graph的margin-top
       state:false,
       msg:"00:00:00",
       StatusBar:"",
@@ -241,7 +258,7 @@
       var date = new Date();
       var mon = date.getMonth() + 1;
       that.data.dates = date.getFullYear() + "."+ mon +"."+ date.getDate();
-      console.log(that.data.dates)
+      //console.log(that.data.dates)
       that.data.begain = date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds();
 
       wx.onAccelerometerChange(function (res) {
@@ -259,10 +276,18 @@
 
            if(that.data.stop_timestamp!=0){
             //表示又重新将手机屏幕向下了，添加暂停时间的提示
-            var t=that.data.begain_timestamp-that.data.stop_timestamp
+            let t=that.data.begain_timestamp-that.data.stop_timestamp
             date=new Date(t)
-            var ti="暂停 "+date.getMinutes()+"分 "+date.getSeconds()+"秒"
-            var front=that.data.pauseFront
+            let mt=date.getMinutes()
+            let st=date.getSeconds()
+            let ti=""
+            //当有快速反转的情况时，省略掉0的情况
+            if(mt!=0 || st!=0){
+              ti="暂停 "+mt+"分 "+st+"秒"
+            }else{
+              ti="只停了一下下..."
+            }
+            let front=that.data.pauseFront
             front.push(ti)
             that.pauseFront=front
             that.$apply()
@@ -274,20 +299,20 @@
          that.data.stop_timestamp = (new Date()).valueOf();
          that.data.timestamp = that.data.stop_timestamp - that.data.begain_timestamp;
 
-         var k = that.data.timestamp1 + that.data.timestamp;
+         let k = that.data.timestamp1 + that.data.timestamp;
          date=new Date(k)
          that.data.sec = date.getSeconds();
          that.data.min = date.getMinutes();
-         var h = date.getHours();
+         let h = date.getHours();
          //由于时间戳之间的运算没有考虑时差，date.getHours()的值总提前8个小时
          if(h>=8){h-=8}else{h+=16}
          that.data.hou=h
          //console.log(that.data.timestamp1+":"+that.data.timestamp+":"+new Date(10800000).getHours())
 
          //持续更新界面的时间 
-         var a=""
-         var b=""
-         var c=""
+         let a=""
+         let b=""
+         let c=""
          //以下三个for循环意味构造形如"00:00:00"的信息提示
          //再次将a.b.c的值赋给hou.min.sec是因为在提交信息到后台时需要统一格式
          //这里本身不需要将a.b.c赋值，但为了安全起见，也赋值一下
@@ -333,29 +358,36 @@
          date=new Date(that.data.timestamp1)
          that.data.sec = date.getSeconds();
          that.data.min = date.getMinutes();
-         var h = date.getHours();
+         let h = date.getHours();
          //由于时间戳之间的运算没有考虑时差，date.getHours()的值总提前8个小时
          if(h>=8){h-=8}else{h+=16}
          that.data.hou=h
 
          if(that.data.begain_timestamp!=0){
           //表示手机屏幕已从向下变为向上，添加一个计时周期时间的提示
-            var t=that.data.stop_timestamp-that.data.begain_timestamp
+            let t=that.data.stop_timestamp-that.data.begain_timestamp
             date=new Date(t)
-            var h = date.getHours();
+            let h = date.getHours();
              //由于时间戳之间的运算没有考虑时差，date.getHours()的值总提前8个小时
              if(h>=8){h-=8}else{h+=16}
 
              //如果有小时数则给与小时数的提示
              if(h!=0){
-              var ti="专注 "+h+"小时 "+date.getMinutes()+"分 "+date.getSeconds()+"秒"
-              var front=that.data.pauseFront
+              let ti="专注 "+h+"小时 "+date.getMinutes()+"分 "+date.getSeconds()+"秒"
+              let front=that.data.pauseFront
               front.push(ti)
               that.pauseFront=front
               that.$apply()
              }else{
-              var ti="专注 "+date.getMinutes()+"分 "+date.getSeconds()+"秒"
-              var front=that.data.pauseFront
+              let mt=date.getMinutes()
+              let st=date.getSeconds()
+              let ti=""
+              if(mt!=0 || st!=0){
+                ti="专注 "+mt+"分 "+st+"秒"
+              }else{
+                ti="开始了一秒不到..."
+              }
+              let front=that.data.pauseFront
               front.push(ti)
               that.pauseFront=front
               that.$apply()
@@ -393,6 +425,15 @@
 
     onShow(){
       //生命周期函数--监听页面显示
+      if(this.$parent.globalData.roomIds==1){
+        //没加入房间
+        this.roomId=""
+        this.graph_top=100
+      }else{
+        //加入房间
+        this.roomId=this.$parent.globalData.roomId
+        this.graph_top=30
+      }
       var that=this
       //这个函数放sendMsg函数里会有延迟错误
       wx.getNetworkType({
@@ -406,27 +447,9 @@
       });
     }
 
-      //生命周期函数--监听页面隐藏
-
-    onHide(){
-      //手机屏幕熄灭也会触onHide
-      //this.log("time hide")
-      //this.closeCountDown();
-    }
-
     onUnload(){
       //生命周期函数--监听页面卸载
       this.closeCountDown();
-    }
-
-    onPullDownRefresh(){
-      //页面相关事件处理函数--监听用户下拉动作
-      this.log("onPullDownRefresh")
-      setTimeout(function(){  wx.stopPullDownRefresh()},1000)
-    }
-
-    onReachBottom(){
-      //页面上拉触底事件的处理函数
     }
 
     toast(title,icon,duration){
@@ -467,7 +490,9 @@
         this.sendMsg();
       }
 
-      this.data.dates=""
+      //就是这里把this.data.dates清除后导致再次开始后后台收不到记录
+      //this.data.dates=""
+      //这个this.data.dates代表的是年月日，大概率不用清除
       this.data.ends=""
       this.data.times=""
       this.data.stop_timestamp=0;
@@ -486,8 +511,8 @@
 
   sendMsg(){
     console.log("sendMsg")
-    console.log(this.data.pauseMsg)
-    console.log(this.data.dates)
+    //console.log(this.data.pauseMsg)
+    //console.log(this.data.dates)
     var that=this
     var app=this.$parent
     //console.log("app.globalData.roomId:"+app.globalData.roomId)

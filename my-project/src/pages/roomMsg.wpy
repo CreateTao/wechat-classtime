@@ -5,15 +5,36 @@
 .title{width: 300rpx;height: 60rpx;margin:20rpx;background-color:#dddee1;line-height: 60rpx;display: flex;flex-direction: row;padding:0;align-items: center;}
 .image{width:45rpx;height:40rpx;margin:0 50rpx 0 30rpx;}
 
+.canvas{width:300px; height:300px;}
+
 .item{width: 100%;height: 80rpx; padding-left: 30rpx;border-bottom:2rpx solid #dddee1;line-height: 80rpx;color:#495060;}
 
 .list{width: 98%; display: flex;flex-direction: column;border:2rpx solid #dddee1;border-top: 2rpx solid #2d8cf0;}
 .list_title{height: 100rpx;background-color: #f8f8f9;display: flex;flex-direction: row;align-items: center;}
-.list_name{width: 38%;text-align:center;}
+.list_name{width: 38%;text-align:center;text-overflow: ellipsis;overflow: hidden;white-space: nowrap;}
 .list_time{width: 30%;text-align:center;}
 .list_state{width: 30%;text-align:center;}
 .list_item{height: 80rpx;display: flex;flex-direction: row;align-items: center;}
 .image_state{width: 50rpx;height: 50rpx;}
+
+.email{
+  display: flex;
+  flex-direction: column;
+  background-color: #ffffff;
+  align-items: center;
+}
+.email input{
+  width: 550rpx;
+  height: 80rpx;
+  border-radius:10rpx;
+  border:3rpx solid #1CBBB4;
+  color:#6a6f77;
+  padding:10rpx;
+  margin: 30rpx 0;
+  text-align:center;
+  line-height: 80rpx;
+}
+
 </style>
 
 <template>
@@ -36,11 +57,18 @@
       </view>
       <view class="item"><text space="emsp">房间号      {{roomId}}</text></view>
       <view class="item"><text space="emsp">房间信息     {{remark}}</text></view>
+      <view class="item" @tap="download">
+        <text class="icon-down lg text-gray" style="margin-left:450rpx;"></text>
+        <text style="margin-left:20rpx;">导出记录</text>
+      </view>
     </view>
     <!--configue end-->
+
    <view class="chart">
-     <canvas canvas-id="pieCanvas" class="canvas" style="height:300px"></canvas>
+     <canvas canvas-id="pieCanvas" class="canvas"wx:if="{{!chartImage}}"></canvas>
+     <image wx:else src="{{chartImage}}" style="width:300px;height:300px;"/>
    </view> 
+
    <view class="list">
      <view class="list_title">
        <view class="list_name">姓名</view>
@@ -57,6 +85,55 @@
      </view>
    </view>
   </view>
+
+  <!--请输入邮箱地址-->
+  <!--email begain-->
+  <view class="cu-modal {{modalEmail=='show'?'show':''}}">
+    <view class="cu-dialog">
+      <view class="cu-bar bg-white justify-end">
+        <view class='content'>请输入邮箱地址！</view>
+        <view class='action' bindtap="cancel">
+          <text class='icon-close text-red'></text>
+        </view>
+      </view>
+
+      <form bindsubmit="confirm">
+        <view class='email'>
+          <input name="email" value="{{email_address}}"/>
+          <view style="margin-buttom:30rpx;">{{email_msg}}</view>
+        </view>
+        <view class="cu-bar bg-white justify-end">
+          <view class='action'>
+            <button class='cu-btn line-green text-green' bindtap='cancel'>取消</button>
+            <button class='cu-btn bg-green 'style="margin-left:390rpx;" form-type='submit'>确定</button>
+          </view>
+        </view>
+      </form>
+
+    </view>
+  </view>
+  <!--email end-->
+
+  <!--load begain-->
+  <view class="cu-modal {{modalLoad=='show'?'show':''}}">
+    <view class="cu-dialog">
+      <view class="cu-bar bg-white justify-end">
+        <view class='content'>{{loadMsg}}</view>
+        <view class='action' bindtap='cancelLoad'>
+          <text class='icon-close text-red'></text>
+        </view>
+      </view>
+
+      <view class='padding-xl'>
+       <view class="cu-progress round sm striped active">
+          <view class='bg-green' style="width:{{loading}};"></view>
+        </view>
+        <view style="margin-top:20rpx;">发送成功后，若未收到邮件，请查看邮箱的“垃圾箱”或者“垃圾邮件站”！</view>
+      </view>
+
+    </view>
+  </view>
+  <!--load end-->
 
 
 </template>
@@ -81,12 +158,20 @@
 
     data = {
      roomId:"",
+     roomIds:"",
      remark:"",
      online:100,//在听课
      unonline:0,//看手机
      msg:[],
      StatusBar:"",
      CustomBar:"",
+     modalEmail:"",//控制确定选项是否弹出
+     email_msg:"我们会把记录表格发送到您的邮箱中！",
+     email_address:"",
+     modalLoad:"",
+     loading:"",
+     loadMsg:"生成报表中...",
+     chartImage:false,
     }
 
     computed = {
@@ -94,6 +179,63 @@
     }
 
     methods = {
+
+      download(){
+        if(this.data.roomIds==""){
+          this.toast("无法加载数据","none",1000)
+          return 
+        }
+        let that=this
+        wx.canvasToTempFilePath({
+          x: 0,
+          y: 0,
+          width: 300,
+          height: 300,
+          canvasId: 'pieCanvas',
+          success: function(res) {
+            that.chartImage=res.tempFilePath
+            that.$apply()
+          }
+        })
+        wx.getStorage({
+          key: 'email',
+          success(res) {
+            that.email_address=res.data
+            that.$apply()
+          }
+        })
+        this.modalEmail="show"
+      },
+
+      confirm(res){
+
+        let email=res.detail.value.email
+        console.log(email)
+
+        if(this.checkEmail(email)){
+          //地址正确
+          wx.setStorage({key:"email",data:email})
+          this.sendEmail(email)
+          this.modalEmail=""
+          this.modalLoad="show"
+        }else{
+          //地址错误
+          this.email_msg="请填写正确的邮件地址！"
+        }
+
+      },
+      cancel(){
+        this.modalEmail=""
+      },
+      cancelLoad(){
+        //取消加载
+        this.loadMsg="取消中..."
+        let that=this
+        setTimeout(function(){
+          that.modalLoad=""
+          that.$apply()
+        },1000)
+      }
       
     }
 
@@ -104,28 +246,11 @@
     onLoad(options) {
       //生命周期函数--监听页面加载
       //console.log(options)
+      this.roomIds=options.roomId
       this.getMsg(options.roomId)
       this.StatusBar=this.$parent.globalData.StatusBar
       this.CustomBar=this.$parent.globalData.CustomBar
     }
-
-    onReady(){
-      //生命周期函数--监听页面初次渲染完成
-    }
-
-    onShow(){
-      //生命周期函数--监听页面显示
-      this.$apply()
-    }
-
-    onHide(){
-      //生命周期函数--监听页面隐藏
-    }
-
-    onUnload(){
-      //生命周期函数--监听页面卸载
-    }
-
     onPullDownRefresh(){
       //页面相关事件处理函数--监听用户下拉动作
       this.log("onPullDownRefresh")
@@ -138,11 +263,6 @@
         this.getMsg(this.$parent.globalData.roomIds)
       }
     }
-
-    onReachBottom(){
-      //页面上拉触底事件的处理函数
-    }
-
     toast(title,icon,duration){
       //自己封装的Toast函数
       wx.showToast({
@@ -176,20 +296,23 @@
                 that.toast("您的房间没人！","none",1500);
               }else{
                 console.log(res.data)
-                var msg=new Array()
+                let msg=new Array()
                 msg=res.data.list
                 that.roomId=res.data.room.remark
                 that.remark=res.data.room.roomNumber
-                var online=0
+                let online=0
                 for(var i=0;i<res.data.list.length;i++){
                   if(msg[i].state==1) {
                     online++;
                   }
                   var str=msg[i].name
-                  if(str.length>6){
+                  //console.log(str.length)
+                  //考虑到后台的name可能是null，导致不能正确获得信息,添加判断
+                  //console.log(str)
+                  if(str !=null && str.length>6){
                     //名字太长,中间用两个**代替
-                    var length=str.length
-                    var str1=str[0]+str[1]+"**"+str[length-2]+str[length-1]
+                    let length=str.length
+                    let str1=str[0]+str[1]+"**"+str[length-2]+str[length-1]
                     msg[i].name=str1
                   }
                 }
@@ -219,6 +342,73 @@
         }
       })
     }
+
+  checkEmail( email_address ){
+    var regex = /^([0-9A-Za-z\-_\.]+)@([0-9a-z]+\.[a-z]{2,3}(\.[a-z]{2})?)$/g;
+    if ( regex.test( email_address ) ){
+      return true
+    }else{
+     return false
+    }
+   }
+
+   sendEmail(email){
+    var that=this
+    wx.request({
+      url:  that.$parent.globalData.url + "room/sendEmail",
+      method: 'GET',
+      data: { 
+        "openId":that.$parent.globalData.openId,
+        'roomId':that.data.roomIds,
+        "emailAddress":email
+      },
+      header: {
+          "Content-Type": "application/x-www-form-urlencoded"
+      },
+      complete: function (res) {
+          if (res.statusCode != 200) {
+            that.log("网络连接失败！");
+            that.toast("网络连接失败！","none",1500);
+            return;
+          } else {
+            console.log("发送成功")
+            that.modalLoad=""
+            that.$apply()
+          }
+        }
+      })
+    this.loadShow()
+   }
+
+   loadShow(){
+    //控制加载进度条缓慢消失,进度条并不是代表加载进度，而是给人安慰
+    let i=0
+    let that=this
+    let k=setInterval(function(){
+      let j=that.getRandomNum(1,10)
+      //随机给进度条赋值,多个if判断使得进度条更拟真
+      if(j<3){
+        i+=3
+      }else if(j>=3 && j<6){
+        i+=5
+      }else{
+        i+=7
+      }
+      that.loading=i+"%"
+      if(i>20) that.loadMsg="正在发送邮件...";
+      if(i>100){
+        clearInterval(k)
+        that.modalLoad=""
+      }
+      that.$apply()
+    },1000)
+   }
+
+   getRandomNum(Min,Max){   
+      var Range = Max - Min;   
+      var Rand = Math.random();   
+      return(Min + Math.round(Rand * Range));   
+   }   
     
   }
 </script>

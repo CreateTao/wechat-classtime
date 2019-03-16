@@ -1,21 +1,21 @@
 <!--排行榜-->
 <style>
 .canvas {
-    height: 600rpx;
+  width: 700rpx;
+    height: 488rpx;
 }
 
 .top-three{
   width: 700rpx;
   display: flex;
   flex-direction: column;
-  margin-top: 50rpx;
   border-radius: 10rpx;
   flex-direction: column;
 }
 .top-item{
   width: 700rpx;
   height: 80rpx;
-  font-size: 50rpx;
+  font-size: 45rpx;
   display: flex;
   flex-direction: row;
   justify-content: center;
@@ -32,7 +32,8 @@
   display: flex;
   flex-direction: column;
   margin-top: 50rpx;
-  border:2rpx solid #8DC63F;
+  border:2rpx solid #dddee1;
+  border-top: 2rpx solid #2d8cf0;
   border-radius: 10rpx;
 }
 .list-item{
@@ -41,15 +42,17 @@
   line-height: 80rpx;
   display: flex;
   flex-direction: row;
-  border-top:1rpx solid #8DC63F;
+  border:1rpx solid #dddee1;
 }
 .list-item text{
-  width: 150rpx;
+  width: 200rpx;
   height: 80rpx;
   line-height: 80rpx;
   text-align: center;
   font-size: 40rpx;
-  color: #1CBBB4;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
 }
 </style>
 
@@ -70,17 +73,17 @@
     <view class="top-three">
 
       <view class="top-item" style="color:#7CB5EC;">
-        <text>桂折一枝：</text>
+        <text>状元：</text>
         <text style="margin-left:25rpx;">{{one}}</text>
       </view>
 
       <view class="top-item" style="color:#F7A35C;">
-        <text>不分伯仲：</text>
+        <text>榜眼：</text>
         <text style="margin-left:25rpx;">{{two}}</text>
       </view>
 
       <view class="top-item" style="color:#434348;">
-        <text>后起之秀：</text>
+        <text>探花：</text>
         <text style="margin-left:25rpx;">{{three}}</text>
       </view>
 
@@ -90,14 +93,14 @@
 
       <view class="list-item" >
         <text>排名</text>
-        <text style="margin-left:100rpx;">姓名</text>
-        <text style="margin-left:100rpx;font-size:30rpx;width:200rpx;">专注时间\秒</text>
+        <text style="margin-left:50rpx;">姓名</text>
+        <text style="margin-left:50rpx;font-size:30rpx;width:200rpx;">专注时间\秒</text>
       </view>
 
       <view class="list-item" wx:for="{{element}}">
         <text>{{index+1}}</text>
-        <text style="margin-left:100rpx;">{{item.name}}</text>
-        <text style="margin-left:100rpx;">{{item.times}}</text>
+        <text style="margin-left:50rpx;">{{item.name}}</text>
+        <text style="margin-left:50rpx;">{{item.times}}</text>
       </view>
 
     </view>
@@ -218,8 +221,6 @@
           }
           console.log(res.data)
           that.$apply()
-          console.log(a+"-"+b+"-"+c)
-          console.log()
           that.draw(a,b,c)
         }
       }
@@ -227,6 +228,22 @@
     }
 
     draw(a,b,c){
+      var windowWidth = 320
+      var windowHeight=0
+      var fontSize=0
+      var ratio=0
+        try {
+            var res = wx.getSystemInfoSync();
+            windowWidth = res.windowWidth;
+            windowHeight =res.windowHeight * 0.35
+            //大致估算下圆环中心的字体大小
+            ratio=windowWidth / 414
+            fontSize=(res.fontSizeSetting + 10) * ratio 
+            //console.log(windowWidth+"---"+windowHeight+"---"+fontSize)
+        } catch (e) {
+            console.error('getSystemInfoSync failed!');
+        }
+
       ringChart = new wxCharts({
             animation: true,
             canvasId: 'ringCanvas',
@@ -240,7 +257,7 @@
             title: {
                 name: '前三甲',
                 color: '#7cb5ec',
-                fontSize: 25
+                fontSize: fontSize
             },
             series: [{
                 name: '成交量1',
@@ -256,8 +273,8 @@
                 stroke: false
             }],
             disablePieStroke: true,
-            width: 280,
-            height: 280,
+            width: windowWidth,
+            height: windowHeight,
             dataLabel: false,
             legend: false,
             background: '#f5f5f5',

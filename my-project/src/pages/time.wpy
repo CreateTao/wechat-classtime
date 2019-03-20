@@ -549,7 +549,6 @@
   }
 
   online(){
-    console.log("online")
     var app=this.$parent
     var that=this
     //前端每三分钟发一次，后台五分钟没收到online信号，即视为已不在线
@@ -567,6 +566,7 @@
       if (app.globalData.roomIds == 1) {
         return;
       } else {
+        console.log("online")
         wx.request({
           url: app.globalData.url + "time/online",
           method: 'POST',
@@ -591,7 +591,6 @@
   }
 
   suspend(){
-    console.log("suspend")
     var app=this.$parent
     var that=this
     //if(app.globalData.flag==false){
@@ -601,7 +600,7 @@
       if (app.globalData.roomIds == 1) {
         return;
       } else {
-
+        console.log("suspend")
         wx.request({
           url: app.globalData.url + "time/suspend",
           method: 'POST',

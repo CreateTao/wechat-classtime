@@ -27,11 +27,26 @@
   text-align: center;
 }
 
+.ranking-button{
+  margin-top: 50rpx;
+  display: flex;
+  flex-direction: row;
+}
+.default{
+  font-size: 35rpx;
+  padding: 15rpx 50rpx;
+  margin: 3rpx 20rpx;
+  border-radius: 15rpx;
+  background-color: #CCE6FF;
+}
+.choose{
+  background-color: #2d8cf0;
+}
+
 .list{
   width: 700rpx;
   display: flex;
   flex-direction: column;
-  margin-top: 50rpx;
   border:2rpx solid #dddee1;
   border-top: 2rpx solid #2d8cf0;
   border-radius: 10rpx;
@@ -89,6 +104,12 @@
 
     </view>
 
+    <view class="ranking-button" >
+      <view class="default {{button=='day'?'choose':''}}" @tap="day">日榜</view>
+      <view class="default {{button=='week'?'choose':''}}" @tap="week">周榜</view>
+      <view class="default {{button=='history'?'choose':''}}" @tap="history">历史排行榜</view>
+    </view>
+
     <view class="list">
 
       <view class="list-item" >
@@ -137,7 +158,9 @@
      one:"张三",
      two:"李四",
      three:"王五",
-     element:[],
+     elements:[],//这是保存三个排行榜的数组
+     element:[],//这是保存用来渲染前端被选中的那个排行榜的数组
+     button:"day",//默认选择日榜
     }
 
     computed = {
@@ -145,7 +168,21 @@
     }
 
     methods = {
-      
+      day(){
+        //day
+        this.button="day"
+        this.draw(0)
+      },
+      week(){
+        //week
+        this.button="week"
+        this.draw(1)
+      },
+      history(){
+        //year
+        this.button="history"
+        this.draw(2)
+      }
     }
 
     events = {
@@ -198,51 +235,81 @@
           that.toast("服务器出错！","",700)
         }else{
           //得到的数据时从大到小排列的
-          let length=res.data.length
-          let array=res.data
-          that.element=res.data
-          let a=0
-          let b=0
-          let c=0
-          //为前三甲赋值
-          for (let i = 0; i <3; i++) {
-            if(i <= length-1 && i==0) {
-              that.one=array[i].name
-              a=array[i].times
-            }
-            if(i <= length-1 && i==1) {
-              that.two=array[i].name
-              b=array[i].times
-            }
-            if(i <= length-1 && i==2 ){
-              that.three=array[i].name
-              c=array[i].times
-            }
-          }
+          that.elements=res.data
+          that.element=res.data[0]
           console.log(res.data)
           that.$apply()
-          that.draw(a,b,c)
+          
+          //日榜和周榜可能没有数据，为了美观，找到一个有数据的排行榜显示
+          let i=0
+          while(i<3){
+            if(res.data[i].length!=0){
+              that.draw(i)
+              if(i==0) that.button="day";
+              if(i==1) that.button="week";
+              if(i==2) that.button="history";
+              break;
+            }
+            i++
+          }
+
+          //三个排行榜都没数据则显示第一个
+          if(res.data.length==0)
+            that.draw(0);
+          
+          that.$apply()
         }
       }
     })
     }
 
-    draw(a,b,c){
-      var windowWidth = 320
-      var windowHeight=0
-      var fontSize=0
-      var ratio=0
-        try {
-            var res = wx.getSystemInfoSync();
-            windowWidth = res.windowWidth;
-            windowHeight =res.windowHeight * 0.35
-            //大致估算下圆环中心的字体大小
-            ratio=windowWidth / 414
-            fontSize=(res.fontSizeSetting + 10) * ratio 
-            //console.log(windowWidth+"---"+windowHeight+"---"+fontSize)
-        } catch (e) {
-            console.error('getSystemInfoSync failed!');
+    /**
+    *0代表日榜
+    *1代表周榜
+    *2代表历史排行榜
+    */
+    draw(num){
+      let windowWidth = 320
+      let windowHeight=0
+      let fontSize=0
+      let ratio=0
+
+      let length=this.data.elements[num].length
+      let array=this.data.elements[num]
+      //a,b,c全为零画的图不好看
+      let a=10
+      let b=10
+      let c=10
+
+      this.element=this.data.elements[num]
+
+      //为前三甲赋值
+      for (let i = 0; i <3; i++) {
+        if(i <= length-1 && i==0) {
+          this.one=array[i].name
+          a=array[i].times
         }
+        if(i <= length-1 && i==1) {
+          this.two=array[i].name
+          b=array[i].times
+        }
+        if(i <= length-1 && i==2 ){
+          this.three=array[i].name
+          c=array[i].times
+        }
+      }
+
+      try {
+          var res = wx.getSystemInfoSync();
+          windowWidth = res.windowWidth;
+          windowHeight =res.windowHeight * 0.35
+          //大致估算下圆环中心的字体大小
+          ratio=windowWidth / 414
+          fontSize=(res.fontSizeSetting + 10) * ratio 
+          //console.log(windowWidth+"---"+windowHeight+"---"+fontSize)
+      } catch (e) {
+          console.error('getSystemInfoSync failed!');
+      }
 
       ringChart = new wxCharts({
             animation: true,
@@ -260,15 +327,15 @@
                 fontSize: fontSize
             },
             series: [{
-                name: '成交量1',
+                name: '状元',
                 data: a,
                 stroke: false
             }, {
-                name: '成交量2',
+                name: '榜眼',
                 data:b,
                  stroke: false
             }, {
-                name: '成交量3',
+                name: '探花',
                 data: c,
                 stroke: false
             }],
@@ -286,6 +353,9 @@
         setTimeout(() => {
             ringChart.stopAnimation();
         }, 500);
+
+        if(this.data.elements[num].length==0) 
+          this.toast("目前还没人哦！","none",2000);
     }
     
     

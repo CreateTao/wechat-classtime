@@ -273,7 +273,6 @@
     
     getUserOpenid() {
       var that = this;
-      let key1=0
       wx.login({
         success: function (res) {
           that.log("your code is---"+res.code);
@@ -309,56 +308,43 @@
                 if(res.data.nickName!=that.data.userInfo.nickName){
                   //给后台传送一遍昵称
                   that.addnickName()
+                  that.addModel()
                 }
+                //检查的逻辑要放在openId返回之后，否则发送的信息后台无法保存
+                that.checkNickNameAndModel()
+
+                //这是测试版的信息发送，每次获取openId都回传信息
+               //正是发布请注销
+               //that.addnickName()
+               //that.addModel()
+
               }
             }
 
           })
         }
       })
-
-      //每登录50次传送一遍昵称以及设备信息
-      key1=wx.getStorageSync('key1')
-      //console.log(key1)
-      if(key1==""){
-        that.addnickName()
-        wx.setStorage({key: 'key1',data: 1})
-      }else if(key1 % 50 ==0){
-        that.addnickName()
-        wx.setStorage({key: 'key1',data: ++key1})
-      }else{
-        wx.setStorage({key: 'key1',data: ++key1})
-      }
      //this.$navigate({url:"./roomMsg?roomId=99"})
     }
 
     addnickName(){
       //保存昵称
+      //把addNickName和addModel分开发送，避免一个函数执行失败造成回滚，两个信息都无法保存
       var that=this
       setTimeout(function(){
         if(that.data.userInfo.nickName=="请授权..." || that.$parent.globalData.openId==""){
           //网络没能加载成功，等待一秒钟再试
+          //防止特殊情况，导致getUserOpenid()为执行或者为返回出现错误
           that.data.flag1++
           that.addnickName()
         }else if(that.data.flag1 >5){
-          that.toast("获取您的资料失败！","","2000")
+          that.toast("获取您的信息失败！","none",2000)
         }else{
-          //获得用户设备信息，每次添加昵称都重新传一遍
-          let system=wx.getSystemInfoSync()
-          console.log(system)
-
            wx.request({
             url: that.$parent.globalData.url +"user/addNickName",
             method: 'POST',
             data: { 'openId':  that.$parent.globalData.openId,
-                    "nickName":that.data.userInfo.nickName,
-                    "brand": system.brand,
-                    "model": system.model,
-                    "languages" :system.language,
-                    "version": system.version,
-                    "system": system.system,
-                    "platform": system.platform,
-                    "sdkVersion": system.SDKVersion
+                    "nickName":that.data.userInfo.nickName
             },
             header: {
               "Content-Type": "application/x-www-form-urlencoded"
@@ -375,6 +361,55 @@
           })
         }
       },1000)
+    }
+
+    addModel(){
+      //把addNickName和addModel分开发送，避免一个函数执行失败造成回滚，两个信息都无法保存
+       var that=this
+      let system=wx.getSystemInfoSync()
+      console.log(system)
+       wx.request({
+        url: that.$parent.globalData.url +"user/addModel",
+        method: 'POST',
+        data: { 'openId':  that.$parent.globalData.openId,
+                "brands": system.brand,
+                "models": system.model,
+                "wechatLanguages" :system.language,
+                "wechatVersion": system.version,
+                "phoneSystem": system.system,
+                "wechatPlatform": system.platform,
+                "sdkVersion": system.SDKVersion
+        },
+        header: {
+          "Content-Type": "application/x-www-form-urlencoded"
+        },
+        complete: function (res) {
+          if (res.statusCode != 200) {
+            that.log("addModel res.statusCode != 200"+res);
+            //that.toast("服务器出错！","none",3000)
+            return;
+          } else{
+            that.log("addModel return successful!")
+          }
+        }
+      })
+    }
+
+    checkNickNameAndModel(){
+      //每登录50次传送一遍昵称以及设备信息
+      let key1=wx.getStorageSync('key1')
+      //console.log(key1)
+      if(key1==""){
+        this.addnickName()
+        this.addModel()
+        wx.setStorage({key: 'key1',data: 1})
+      }else if(key1 % 5 ==0){
+        this.addnickName()
+        this.addModel()
+        wx.setStorage({key: 'key1',data: ++key1})
+      }else{
+        wx.setStorage({key: 'key1',data: ++key1})
+      }
     }
   }
 </script>

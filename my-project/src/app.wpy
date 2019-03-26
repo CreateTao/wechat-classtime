@@ -62,8 +62,8 @@ export default class extends wepy.app {
     isbind:true,//是否绑定账号
     schoolId:"",//学号
     schoolName:"",//绑定的姓名
-    url:"https://daliu.mynatapp.cc/classtime/",
-    //url:"https://www.classtime.top/classtime/classtime/",
+    //url:"https://daliu.mynatapp.cc/classtime/",
+    url:"https://www.classtime.top/classtime/classtime/",
     openId:"",
     netWorkType:"",
     flag:true,//这个标志位用来控制向后台发送的次数

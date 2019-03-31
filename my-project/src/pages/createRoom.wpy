@@ -205,7 +205,12 @@
               that.$parent.globalData.roomId=res.data.number
               that.$parent.globalData.remark=remark
               that.$parent.globalData.roomIds=res.data.roomId
-              that.toast("房间创建成功！","none",1000)
+              that.toast("房间创建成功！","none",888)
+              setTimeout(function(){
+                wx.switchTab({
+                  url: './time'
+                })
+              },888)
             } else if (res.data.status == 1){
               //根据用户输入建立了房间
               that.log("your room number :  "+res.data.number);
@@ -215,7 +220,12 @@
               that.$parent.globalData.roomId=res.data.number
               that.$parent.globalData.remark=remark
               that.$parent.globalData.roomIds=res.data.roomId
-              that.toast("房间创建成功！","none",1000)
+              that.toast("房间创建成功！","none",888)
+              setTimeout(function(){
+                wx.switchTab({
+                  url: './time'
+                })
+              },888)
             } else if (res.data.status == 2){
               //用户输入的房间号正在使用
               that.toast("你输入的房间号已被使用！","none",2000)

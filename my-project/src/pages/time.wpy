@@ -4,11 +4,11 @@
   width: 60%;
   height: 70rpx;
   font-size: 38rpx;
-  margin-top: 80rpx;
+  margin-top: 100rpx;
   border-radius: 15rpx;
   line-height: 70rpx;
   text-align: center;
-  background-color: #0081FF;
+  background-color: #8A2BE2;
   color: #fff;
 }
 .graph{width:400rpx;height: 400rpx;display: flex;flex-direction: column; border:8rpx solid #8A2BE2 ;border-radius:50%; align-items: center;}
@@ -96,13 +96,14 @@
 </style>
 
 <template>
+  <!--
   <view class="cu-custom" style="height:{{CustomBar}}px;">
   <view class="cu-bar fixed gradual-blue"style="height:{{CustomBar}}px;padding-top:{{StatusBar}}px;">
     <navigator class="action" open-type="navigateBack" delta=1 hover-class="none">
       <text class='icon-back'></text>计时
     </navigator>
   </view>
-  </view>
+  </view>-->
   <view class="container">
 
     <view class="not" wx:if="{{roomId!=''}}">您的房间号为：{{roomId}}</view>
@@ -137,6 +138,17 @@
     </view>
 
   </view>
+
+  <!--introduce begain-->
+  <view class="cu-timeline" style="background-color:#F1F1F1;margin-top:100rpx;" wx:if="{{msg=='00:00:00' && roomId==''}}">
+    <view class="cu-time" style="width:200rpx;font-size:27rpx;">温馨提示</view>
+    <view class='cu-item cur icon-noticefill'>
+      <view class="content bg-mauve shadow-blur">
+        当您加入房间后，房主才能看到你的记录哦
+      </view>
+    </view>
+  </view>
+  <!--introduce end-->
 
 </template>
 
@@ -417,6 +429,15 @@
 
          that.msg=a+":"+b+":"+c
          that.$apply()
+
+
+         if(that.data.pause>5){
+          //暂停次数超过8次，停止计时
+          that.pauseFront="一点都不专注，停这么多次!"
+          that.msg="计时停止！"
+          that.$apply()
+          that.closeCountDown()
+         }
         
        }
 

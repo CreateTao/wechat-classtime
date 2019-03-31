@@ -172,7 +172,7 @@
     <!--work begain-->
     <view class="work">
       <view class='nav-list'>
-        <view class="nav-li bg-{{item.color}}" style="color:#FFFFFF;" wx:for="{{elements}}" bindtap="{{item.name}}" >
+        <view class="nav-li bg-{{item.color}}" style="color:#FFFFFF;" wx:for="{{elements}}" bindtap="choose" data-index="{{index}}">
           <view class="nav-title">{{item.title}}</view>
           <view class="nav-name">{{item.name}}</view>
           <text class='icon-{{item.icon}}'></text>
@@ -194,7 +194,6 @@
       <view class="text">“尊敬的用户”，您好，若遇到系统错误的情况，请及时联系管理员邮箱2015819418@qq.com，我们感谢您的使用，祝您学习愉快！</view>
     </view>
     <!--introduce end-->
-
     
 
   </view>
@@ -208,7 +207,7 @@
 <script>
   import wepy from 'wepy'
 
-  export default class Index extends wepy.page {
+  export default class Index extends wepy.page { 
     config = {
       navigationBarTitleText: '无机课堂',
       usingComponents:{
@@ -230,13 +229,11 @@
       roomId:"",//房间号
       isbind:true,//是否绑定账号
       elements: [
-      { title: '计时', name: 'time', color: 'cyan', icon: 'countdownfill' },
       { title: '创建房间', name: 'createRoom', color: 'blue', icon: 'colorlens' },
       { title: '进入房间', name: 'getRoom', color: 'purple', icon: 'circlefill' },
       { title: '退出房间', name: 'exitRoom', color: 'mauve', icon: 'exit' },
-      { title: '我的记录', name: 'myRecord', color: 'pink', icon: 'footprint' },
-      { title: '我的房间', name: 'myRoomRecord', color: 'brown', icon: 'homefill' },
-      { title: '房间信息', name: 'roomMsg', color: 'red', icon: 'selectionfill' }
+      { title: '房间信息', name: 'roomMsg', color: 'red', icon: 'selectionfill' },
+      { title: '房间记录', name: 'roomRecord', color: 'brown', icon: 'tagfill' }
       ],
       msg:true,
       flag1:true,//控制没有绑定学号，多次刷新只出来一个“身份绑定”的按钮
@@ -247,49 +244,49 @@
     }
 
     methods = {
-      test(){
-        this.setData({msg:false})
-        this.$apply()
-        console.log(this.data.msg)
-        //this.$apply()
-      },
-      identity(){
-        this.$navigate({url:"./identity"})
-      },
-      createRoom(){
-        this.$navigate({url:"./createRoom"})
-      },
-      getRoom(){
-        this.$navigate({url:"./getRoom"})
-      },
-      exitRoom(){
-        //退出房间无需向后台发送信息
-        if(this.$parent.globalData.roomId=="" || this.$parent.globalData.roomId==1){
-          this.Toast("您还未加入房间！","none",2000)
-        }else{
-          this.$parent.globalData.roomId=""
-          this.$parent.globalData.roomIds=1
-          this.$apply()
-          wx.startPullDownRefresh()
+      choose(e){
+        let index=e.currentTarget.dataset.index
+        switch(index){
+          case 0:
+            this.$navigate({url:"./createRoom"})
+            break;
+
+          case 1:
+            this.$navigate({url:"./getRoom"})
+            break;
+
+          case 2:
+            //退出房间无需向后台发送信息
+            if(this.$parent.globalData.roomId=="" || this.$parent.globalData.roomId==1){
+              this.Toast("您还未加入房间！","none",2000)
+            }else{
+              this.$parent.globalData.roomId=""
+              this.$parent.globalData.roomIds=1
+              this.$apply()
+              wx.startPullDownRefresh()
+            }
+            break;
+
+          case 3:
+            if(this.$parent.globalData.roomIds==1){
+              this.Toast("您还未加入房间！","none",1000)
+              //this.$navigate({url:"./roomMsg"})
+            }else{
+              this.$navigate({url:"./roomMsg?roomId="+this.$parent.globalData.roomIds})
+            }
+            break;
+
+          case 4:
+            this.$navigate({url:"./myRoomRecord"})
+            break;
+
+          case 5:
+            this.$navigate({url:"./identity"})
+            break;
+
         }
       },
-      myRecord(){
-        this.$navigate({url:"./myRecord"})
-      },
-      myRoomRecord(){
-        this.$navigate({url:"./myRoomRecord"})
-      },
-      roomMsg(){
-        if(this.$parent.globalData.roomIds==1){
-          this.Toast("您还未加入房间！","none",1000)
-          //this.$navigate({url:"./roomMsg"})
-        }else{
-          this.$navigate({url:"./roomMsg?roomId="+this.$parent.globalData.roomIds})
-        }
-      },
-      time(){
-        this.$navigate({url:"./time"})
-      },
+      
     }
 
     events = {

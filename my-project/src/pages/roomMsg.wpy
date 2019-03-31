@@ -154,6 +154,7 @@
       navigationBarTitleText: '房间信息',
       usingComponents:{
       },
+      enablePullDownRefresh: true,//关闭下拉刷新 
       backgroundTextStyle: "dark",//白色主题启用深色模式，在下拉刷新时才能有白色圆点
     }
     components = {

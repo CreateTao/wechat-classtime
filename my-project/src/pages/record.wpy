@@ -162,7 +162,6 @@
      elements: [
       { title: '我的记录', name: 'myRecord', color: 'pink', icon: 'footprint' },
       { title: '我的房间', name: 'myRoomRecord', color: 'brown', icon: 'homefill' },
-      { title: '房间信息', name: 'roomMsg', color: 'red', icon: 'selectionfill' },
       { title: '导出记录', name: 'download', color: 'cyan', icon: 'down' }
       ],
        userInfo: {

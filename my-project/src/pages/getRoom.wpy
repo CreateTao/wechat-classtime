@@ -174,8 +174,12 @@
               that.$parent.globalData.roomIds=res.data.roomId
               that.toast("成功加入房间！","success",1000)
               that.$apply()
-              //返回主页面
-              wx.navigateBack({delta: 1})
+              
+              setTimeout(function(){
+                wx.switchTab({
+                  url: './time'
+                })
+              },888)
             }
 
           }

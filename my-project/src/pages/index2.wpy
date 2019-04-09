@@ -49,40 +49,6 @@
   height: 100rpx;
 }
 
-.index{margin: 100rpx 0 0 0;}
-.card-swiper {
-  height: 480rpx;
-}
-.card-swiper .item{display: flex;flex-direction: column;}
-
-.card-swiper .item .top{
-  display: flex;flex-direction: row;
-  width:610rpx; 
-  height:300rpx; 
-  color: #FFFFFF;
-  align-items: center;
-}
-.card-swiper .item .top .top-left{
-  width:305rpx;
-  height:300rpx;
-  margin:0 35rpx;
-  padding-left: 50rpx; 
-  font-size: 40rpx;
-  line-height: 300rpx;
-}
-.card-swiper .item .top .top-right{
-  width:183rpx;
-  height:183rpx;
-  margin:0 35rpx;
-}
-.card-swiper .item .bottom{
-  font-size: 40rpx;
-  width:100%; 
-  height:70rpx;
-  line-height: 70rpx;
-  text-align: center;
-}
-
 
 </style>
 
@@ -97,14 +63,14 @@
   </view>
 
   <view class="userinfo" style="margin-top:{{CustomBar}}px;" wx:else>
-    <button open-type="getUserInfo" bindgetuserinfo="bindGetUserInfo">少年，请授予权限后...再刷新！</button>
+    <button open-type="getUserInfo" bindgetuserinfo="bindGetUserInfo">点我授权！</button>
   </view>
   <!--user end-->
 
   <!--system introduce begain-->
   <swiper class="screen-swiper square-dot sys-intro" indicator-dots="true" circular="true" autoplay="true" interval="5000" duration="500">
-    <swiper-item wx:for="{{imagePath}}" wx:key>
-      <image src="{{item}}" mode='aspectFill'></image>
+    <swiper-item wx:for="{{7}}" wx:key>
+      <image src="./image/index/{{index+1}}.jpg" mode='aspectFill'></image>
     </swiper-item>
   </swiper>
   <!--system introduce end-->
@@ -125,31 +91,6 @@
     <image src="./image/5.png"></image>
   </view>
   <!--button-->
-
-  <!--
-  <view class="index">
-
-    <scroll-view scroll-x class="nav">
-      <view class='flex text-center'>
-        <view class="cu-item flex-sub {{index==cardCur?'text-orange cur':''}}" wx:for="{{swiperItem}}" wx:key bindtap='tabSelect' data-id="{{index}}">
-         {{item.name}}
-        </view>
-      </view>
-    </scroll-view>
-
-    <swiper class="card-swiper round-dot" indicator-dots="true" circular="true" autoplay="true"  interval="5000" duration="500" bindchange="cardSwiper" indicator-color="#8799a3" indicator-active-color="#0081ff" current="{{cardCur}}">
-      <swiper-item wx:for="{{swiperItem}}" class="{{cardCur==index?'cur':''}}">
-        <view class="item shadow-blur bg-img {{item.color}}" bindtap="choose" data-index="{{index}}">
-          <view class="top">
-            <text class="top-left">{{item.name}}</text>
-            <image class="top-right" src="{{item.icon}}" />
-          </view>
-          <view class="bottom">{{item.english}}</view>
-        </view>
-      </swiper-item>
-    </swiper>
-  </view>
-  -->
 
   <!--introduce begain-->
   <view class="cu-timeline" style="background-color:#F1F1F1;margin-top:50rpx;">
@@ -182,14 +123,14 @@
     <view class="cu-dialog">
       <view class="cu-bar bg-white justify-end">
         <view class='content'>尊敬的用户您好</view>
-        <view class='action' bindtap='cancelModel'>
+        <button class='action' open-type="getUserInfo" bindgetuserinfo="bindGetUserInfo">
           <text class='icon-close text-red'></text>
-        </view>
+        </button>
       </view>
 
       <view class='padding-xl'>
-        <view style="margin-top:20rpx;">为了提供更好的服务，我们需要您的一些基本信息！这些信息包含您的微信昵称、头像、手机参数等。</view>
-        <view style="margin-top:20rpx;">我们会妥善保管你这些信息，并不会泄露这些信息，请您放心！</view>
+        <view style="margin-top:20rpx;">1、为了提供更好的服务，我们需要您的一些基本信息！这些信息包含您的微信昵称、头像、手机参数等。</view>
+        <view style="margin-top:20rpx;">2、我们会妥善保管你这些信息，并不会泄露这些信息，请您放心！</view>
       </view>
 
     </view>
@@ -263,58 +204,22 @@
     }
 
     methods = {
-      choose(e){
-        if(!this.canIUse){
-          this.toast("对不起，您未授权！","none",2000)
-          return 
-        }
-        if(this.$parent.globalData.openId==""){
-          this.toast("与服务器失连了！","none",2000)
-          return 
-        }
-        let i=e.currentTarget.dataset.index
-        //console.log(i)
-        switch(i){
-          case 0:
-            //this.log("学习时间");
-            //console.log("time")
-             wx.switchTab({
-               url: './time'
-            })
-          break;
-          case 1:
-            //this.log("无机课堂");
-            this.$navigate({url:"./index"})
-          break;
-          case 2:
-            //this.log("排行榜");
-            wx.switchTab({
-               url: './ranking'
-            })
-          break;
-          case 3:
-            //this.log("记录");
-            this.$navigate({url:"./record"})
-          break;
-        }
-      },
       // cardSwiper
       cardSwiper(e) {
         this.cardCur=e.detail.current
       },
       bindGetUserInfo(e){
         console.log(e.detail.userInfo)
+        this.modelShow=""
         if(e.detail.userInfo != undefined){
           //获得用户授权后
+          this.$prent.globalData.userInfo=e.detail.userInfo
           this.userInfo=e.detail.userInfo
           this.canIUse=true
           this.getUserOpenid()
+        }else{
+          that.toast("请授权！！！","none",1500)
         }
-      },
-      tabSelect(e) {
-        this.cardCur=e.currentTarget.dataset.id
-        this.scrollLeft=(e.currentTarget.dataset.id-1)*60
-        
       },
        cancelModel(){
         this.modelShow=""
@@ -342,12 +247,14 @@
       var that=this
       // 查看是否授权
       wx.getSetting({
-        success(res) {
+        success(res) { 
+          //console.log(res)
           if (res.authSetting['scope.userInfo']) {
             // 已经授权，可以直接调用 getUserInfo 获取头像昵称
             wx.getUserInfo({
               success(res) {
-                //console.log(res.userInfo)
+                console.log("wx.getUserInfo返回如下信息")
+                console.log(res)
                 that.userInfo=res.userInfo
                 that.$parent.globalData.userInfo=res.userInfo
                 that.$apply() 
@@ -363,14 +270,15 @@
         }
       })
 
-      this.addImage()
-      
       //this.$navigate({url:"./ranking"})
     }
+
+
     onPullDownRefresh(){
       //页面相关事件处理函数--监听用户下拉动作
       this.log("onPullDownRefresh")
       this.getUserOpenid()
+
       setTimeout(function(){  wx.stopPullDownRefresh()},1500)
     }
 
@@ -395,8 +303,8 @@
       wx.login({
         success: function (res) {
           that.log("your code is---"+res.code);
+
           wx.request({
-            
             url: that.$parent.globalData.url +"user/getOpenId",
             method: 'GET',
             data: { 'code': res.code },
@@ -413,30 +321,31 @@
               }else{
                 that.$parent.globalData.openId = res.data.openid;
                 that.log("your openId is---"+that.$parent.globalData.openId);
-                console.log(res.data)
+                //console.log(res.data)
                 if(res.data.status=="no"){
                   //没绑定学号
                   that.$parent.globalData.isbind=false
                   //that.toast("未绑定学号或姓名!","none",1000);
                 }else{
                   that.$parent.globalData.isbind=true
-                  that.$parent.globalData.schoolId=res.data.status
+                  that.$parent.globalData.schoolId=res.data.schoolId
                   that.$parent.globalData.schoolName=res.data.schoolName
                 }
-                //console.log(that.data.userInfo)
-                //console.log(that.data.elements)
-                if(res.data.nickName!=that.data.userInfo.nickName){
-                  //给后台传送一遍昵称
-                  that.addnickName()
+                
+                if(!res.data.userMsgComplete){
+                  //给后台传送一遍个人信息
+                  that.updateUserMsg()
+                }else if(res.data.avatarUrl!=that.$parent.globalData.userInfo.avatarUrl){
+                  that.updateUserMsg()
+                }else if(res.data.nickName!=that.$parent.globalData.userInfo.nickName){
+                  that.updateUserMsg()
+                }
+
+                //是否和常用设备不符合
+                let system=wx.getSystemInfoSync()
+                if(system.model!=res.data.model){
                   that.addModel()
                 }
-                //检查的逻辑要放在openId返回之后，否则发送的信息后台无法保存
-                that.checkNickNameAndModel()
-
-                //这是测试版的信息发送，每次获取openId都回传信息
-               //正是发布请注销
-               //that.addnickName()
-               //that.addModel()
 
               }
             }
@@ -447,24 +356,26 @@
      //this.$navigate({url:"./roomMsg?roomId=99"})
     }
 
-    addnickName(){
+    updateUserMsg(){
       //保存昵称
       //把addNickName和addModel分开发送，避免一个函数执行失败造成回滚，两个信息都无法保存
       var that=this
       setTimeout(function(){
-        if(that.data.userInfo.nickName=="请授权..." || that.$parent.globalData.openId==""){
+        if(that.$parent.globalData.userInfo=="" || that.$parent.globalData.openId==""){
           //网络没能加载成功，等待一秒钟再试
           //防止特殊情况，导致getUserOpenid()为执行或者为返回出现错误
           that.data.flag1++
-          that.addnickName()
+          that.updateUserMsg()
         }else if(that.data.flag1 >5){
           that.toast("获取您的信息失败！","none",2000)
         }else{
            wx.request({
-            url: that.$parent.globalData.url +"user/addNickName",
+            url: that.$parent.globalData.url +"user/updateUserMsg",
             method: 'POST',
             data: { 'openId':  that.$parent.globalData.openId,
-                    "nickName":that.data.userInfo.nickName
+                    "nickName":that.data.userInfo.nickName,
+                    "avatarUrl":that.data.userInfo.avatarUrl,
+                    "sex":that.data.userInfo.gender
             },
             header: {
               "Content-Type": "application/x-www-form-urlencoded"
@@ -475,7 +386,7 @@
                 //that.toast("服务器出错！","none",3000)
                 return;
               } else{
-                that.log("addnickName return successful!")
+                that.log("updateUserMsg return successful!")
               }
             }
           })
@@ -514,83 +425,6 @@
         }
       })
     }
-
-    checkNickNameAndModel(){
-      //每次清除数据或者更换设备重新传送一遍昵称以及设备信息
-      let key1=wx.getStorageSync('key1')
-      //console.log(key1)
-      if(key1==""){
-        this.addnickName()
-        this.addModel()
-        wx.setStorage({key: 'key1',data: 1})
-      }else{
-        wx.setStorage({key: 'key1',data: ++key1})
-      }
-    }
-
-    addImage(){
-      //从服务器加载图片,相隔一定的时间加载一遍
-      let that=this
-      let value = wx.getStorageSync('addImageControlNumber')
-      //console.log(value)
-      if(value % 20 != 0){
-        //不向服务器请求图片
-        wx.getStorage({
-          key: 'imagePath',
-          success(res) {
-            that.imagePath=res.data
-          }
-        })
-        wx.setStorage({
-          key: 'addImageControlNumber',
-          data: ++value
-        })
-        return
-      }else{
-        wx.setStorage({
-          key: 'addImageControlNumber',
-          data: ++value
-        })
-      }
-
-      console.log("addImage")
-      let src=[]
-      for(let i=0;i<this.$parent.globalData.imageNumber;i++){
-        wx.downloadFile({
-          url: that.$parent.globalData.url+"image/getImage/"+(i+1), 
-          success(res) {
-            // 只要服务器有响应数据，就会把响应内容写入文件并进入 success 回调，业务需要自行判断是否下载到了想要的内容
-            if (res.statusCode === 200) {
-              //console.log("res.statusCode === 200")
-              let tempFilePaths = res.tempFilePath
-              //console.log(res)
-              wx.saveFile({
-                tempFilePath: tempFilePaths,
-                success(res) {
-                  //console.log(savedFilePath)
-                  src[i]= res.savedFilePath
-                  that.imagePath=src
-                  that.$apply()
-                  //console.log(src)
-                  let j=0
-                  wx.setStorage({
-                    key: 'haveImagePath',
-                    data: true
-                  })
-                  wx.setStorage({
-                    key: 'imagePath',
-                    data: src
-                  })
-                }
-              })
-            }
-          }
-        })
-
-      }
-      
-    }
-
 
   }
 </script>

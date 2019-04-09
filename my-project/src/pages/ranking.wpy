@@ -71,6 +71,13 @@
   overflow: hidden;
   white-space: nowrap;
 }
+
+.myself-introduce{
+  width: 730rpx;
+  height: 300rpx;
+  border-radius: 33rpx;
+  background: linear-gradient(red, blue);
+}
 </style>
 
 <template>
@@ -83,10 +90,21 @@
   </view>
   </view>
   -->
+  
+  <!--
+  <swiper class="card-swiper round-dot" indicator-dots="true" circular="true" autoplay="true" interval="5000" duration="500" bindchange="cardSwiper" indicator-color="#8799a3" indicator-active-color="#0081ff" style="margin-top:88rpx;">
+    <swiper-item wx:for="{{swiperList}}" wx:key class="{{cardCur==index?'cur':''}}">
+      <view class="swiper-item">
+        <image src="{{item.url}}" mode="aspectFill"></image>
+      </view>
+    </swiper-item>
+  </swiper>-->
 
   <view class="container" >
 
-    <canvas canvas-id="ringCanvas" class="canvas" ></canvas>
+    <!--<view class="myself-introduce"></view>-->
+
+    <canvas canvas-id="ringCanvas" class="canvas" ></canvas>  
 
     <view class="top-three">
 
@@ -166,6 +184,36 @@
      element:[],//这是保存用来渲染前端被选中的那个排行榜的数组
      button:"day",//默认选择日榜
      flag1:true,
+     cardCur: 0,
+      swiperList: [{
+        id: 0,
+        type: 'image',
+        url: 'https://ossweb-img.qq.com/images/lol/web201310/skin/big84000.jpg'
+      }, {
+        id: 1,
+        type: 'image',
+        url: 'https://ossweb-img.qq.com/images/lol/web201310/skin/big84001.jpg',
+      }, {
+        id: 2,
+        type: 'image',
+        url: 'https://ossweb-img.qq.com/images/lol/web201310/skin/big39000.jpg'
+      }, {
+        id: 3,
+        type: 'image',
+        url: 'https://ossweb-img.qq.com/images/lol/web201310/skin/big10001.jpg'
+      }, {
+        id: 4,
+        type: 'image',
+        url: 'https://ossweb-img.qq.com/images/lol/web201310/skin/big25011.jpg'
+      }, {
+        id: 5,
+        type: 'image',
+        url: 'https://ossweb-img.qq.com/images/lol/web201310/skin/big21016.jpg'
+      }, {
+        id: 6,
+        type: 'image',
+        url: 'https://ossweb-img.qq.com/images/lol/web201310/skin/big99008.jpg'
+      }]
     }
 
     computed = {
@@ -187,7 +235,13 @@
         //year
         this.button="history"
         this.draw(2)
+      },
+      // cardSwiper
+      cardSwiper(e) {
+        this.cardCur=e.detail.current
       }
+
+
     }
 
     events = {

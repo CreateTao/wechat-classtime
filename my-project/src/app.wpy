@@ -1,8 +1,8 @@
 <style >
 
-@import "icon.wxss";
-@import "colorui.wxss";
-
+@import "colorui/main.wxss";
+@import "colorui/icon.wxss";
+ 
 
 .container {height: 100%;width:100%; display: flex;flex-direction: column;align-items: center;justify-content: space-between;box-sizing: border-box;}
 
@@ -86,15 +86,15 @@ export default class extends wepy.app {
   }
 
   globalData = {
-    userInfo: null,
+    userInfo: "",
     roomId:"",//房间号
     remark:"",//房间备注
     roomIds:1,//房间在数据库表中的主键id,默认为1，表示没有加入房间
     isbind:true,//是否绑定账号
     schoolId:"",//学号
     schoolName:"",//绑定的姓名
-    url:"https://daliu.mynatapp.cc/classtime/",
-    //url:"https://www.classtime.top/classtime/classtime/",
+    //url:"https://daliu.mynatapp.cc/classtime/",
+    url:"https://www.classtime.top/classtime/classtime/",
     openId:"",
     netWorkType:"",
     flag:true,//这个标志位用来控制向后台发送的次数
@@ -102,6 +102,7 @@ export default class extends wepy.app {
     CustomBar:"",//控制上方导航栏的参数
     flag:true,//用来控制time中online和suspend的发送
     imageNumber:7,//index2界面轮播展示的图片数
+    version:1,//小程序版本，修改此值，可导致重新加载一些图片。每次要重新加载图片更新此图片即可。
   }
 
   constructor () {
@@ -145,7 +146,7 @@ export default class extends wepy.app {
     })
   }
 
-  isNumber(val) {
+  isNumber(val) { 
       var regPos = /^\d+(\.\d+)?$/; //非负浮点数
       var regNeg = /^(-(([0-9]+\.[0-9]*[1-9][0-9]*)|([0-9]*[1-9][0-9]*\.[0-9]+)|([0-9]*[1-9][0-9]*)))$/; //负浮点数
       if(regPos.test(val) || regNeg.test(val)) {
@@ -154,5 +155,6 @@ export default class extends wepy.app {
           return false;
       }
     }
+
 }
 </script>

@@ -12,7 +12,7 @@
   color: #fff;
 }
 .graph{width:400rpx;height: 400rpx;display: flex;flex-direction: column; border:8rpx solid #8A2BE2 ;border-radius:50%; align-items: center;}
-.image{width: 150rpx;height: 150rpx;margin-top: 70rpx;}
+.graph image{width: 200rpx;height: 150rpx;margin-top: 70rpx;}
 .text{margin-top: 50rpx;text-align: center;font-size: 35rpx;background-color: #f1f1f1; color: #9932CC;}
 .msg{margin-top: 50rpx;text-align: center;font-size: 35rpx;color:#495060;}
 .result{width:700rpx; display: flex;flex-direction: column;align-items: center;}
@@ -109,12 +109,11 @@
     <view class="not" wx:if="{{roomId!=''}}">您的房间号为：{{roomId}}</view>
     
     <view class="graph" style="margin-top:{{graph_top}}rpx;">
-      <view class='bg-white flex-sub radius shadow-lg image' wx:if="{{state==false}}">
-        <image src='https://image.weilanwl.com/gif/loading-white.gif' mode='aspectFit' class='gif-white response' style='height:150rpx'></image>
-      </view>
-      <view class='bg-white flex-sub radius shadow-lg image' wx:else>
-        <image src='https://image.weilanwl.com/gif/rhomb-white.gif' mode='aspectFit' class='gif-white response' style='height:150rpx'></image>
-      </view>
+
+      <image wx:if="{{!state}}" src='https://image.weilanwl.com/gif/loading-white.gif' mode='aspectFit' class='gif-white response'></image>
+
+      <image wx:else src='https://image.weilanwl.com/gif/rhomb-white.gif' mode='aspectFit' class='gif-white response'></image>
+
       <view class="text">{{msg}}</view>
     </view>
     <view class="msg">{{msg_text}}</view>
@@ -141,7 +140,7 @@
   <!--introduce begain-->
   <view class="cu-timeline" style="background-color:#F1F1F1;margin-top:100rpx;" wx:if="{{msg=='00:00:00' && roomId==''}}">
     <view class="cu-time" style="width:200rpx;font-size:27rpx;">温馨提示</view>
-    <view class='cu-item cur icon-noticefill'>
+    <view class='cu-item cur text-mauve icon-noticefill'>
       <view class="content bg-mauve shadow-blur">
         当您加入房间后，房主才能看到你的记录哦
       </view>
@@ -162,7 +161,7 @@
 
       <view class='padding-xl'>
         <view style="margin-top:20rpx;">现在我们无法标识您的个人身份，这次记录将不会被保存！</view>
-        <view style="margin-top:20rpx;">如果您已经授权，请刷新或者退出清理后台后再重试！！</view>
+        <view style="margin-top:20rpx;">请检查您的网络，或者退出重试等！</view>
       </view>
 
     </view>
@@ -191,7 +190,7 @@
     data = {
       roomId:"",
       timeId:0,//表示本次记录在数据库中time表的主键id，若为0表示还没提交到数据库中
-      graph_top:100,//控制graph的margin-top
+      graph_top:130,//控制graph的margin-top
       state:false,
       msg:"00:00:00",
       msg_text:"把手机翻过去，才能算专注哦！",
@@ -541,7 +540,7 @@
 
 
   sendMsg(){
-    //针对没授权用户
+    //针对没获取到opneId的用户
     if(this.$parent.globalData.openId==""){
       this.modelShow="show"
       return 

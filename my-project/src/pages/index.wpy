@@ -111,10 +111,6 @@
   line-height: 60rpx;
 }
 
-.text-light {
-  font-weight: 300;
-}
-
 @keyframes show {
   0% {
     transform: translateY(-50px);
@@ -179,24 +175,58 @@
         </view>
       </view>
     </view>
-    <!--work end-->
-
-    <!--introduce begain-->
-    <view class="introduce">
-      <view class="title">怎么使用</view>
-      <view class="text warn" wx:if="{{isbind==false}}">身份绑定将只能使用一次，修改请联系管理员</view>
-      <view class="text" wx:if="{{isbind==false}}">身份绑定：暂未绑定学号和姓名</view>
-      <view class="text">进入房间后您的计时信息都将提交到该房间内</view>
-      <view class="text">您也可以创建房间，其他人员可依据房间码进入您的房间</view>
-      <view class="text">“我的记录”,您可以查看您的计时或者房间记录</view>
-      <view class="text">“我的房间”,您可以查看您所创建过的房间</view>
-      <view class="text">“房间信息”,您可以查看当前加入的房间的详细信息</view>
-      <view class="text">“尊敬的用户”，您好，若遇到系统错误的情况，请及时联系管理员邮箱2015819418@qq.com，我们感谢您的使用，祝您学习愉快！</view>
-    </view>
-    <!--introduce end-->
-    
+    <!--work end-->    
 
   </view>
+
+  <!--introduce begain-->
+    <view class="cu-bar bg-white solid-bottom margin-top">
+      <view class="action">
+        <text class="icon-title text-orange"></text>这怎么用？
+      </view>
+      <view class="action">
+        <button class="cu-btn bg-green shadow" bindtap="numSteps">下一步</button>
+      </view>
+    </view>
+    <view class="bg-white padding">
+      <view class="cu-steps">
+        <view class="cu-item {{index>num?'':'text-blue'}}" wx:for="{{numList}}" wx:key>
+          <text class="num" bindtap="numSteps" data-index="{{index + 1}}"></text> {{item.name}}
+        </view>
+      </view>
+    </view>
+    <view class="introduce-text">{{numList[num].introduce}}</view>
+    
+    <!--introduce end-->
+
+    <!--model begain-->
+    <view class="cu-modal {{getIntoRoomModalName=='show'?'show':''}}">
+      <view class="cu-dialog">
+        <view class="cu-bar bg-white justify-end">
+          <view class='content'>我要进入房间</view>
+          <view class='action' bindtap="cancel">
+            <text class='icon-close text-red'></text>
+          </view>
+        </view>
+        <form bindsubmit="getIntoRoomSubmit">
+          <view class='padding-xl'>
+            <view class="cu-form-group">
+              <view class="title">房间号</view>
+              <input type="number" name="number" placeholder="100-9999"></input>
+            </view>
+            <view></view>
+          </view>
+          <view class="cu-bar bg-white justify-end">
+            <view class='action'>
+              <button class='cu-btn line-green text-green' bindtap='cancel'>取消</button>
+              <button class='cu-btn bg-green 'style="margin-left:390rpx;" form-type="submit">确定</button>
+            </view>
+          </view>
+        </form>
+
+      </view>
+    </view>
+    <!--model end-->
  
 </template>
 
@@ -237,7 +267,29 @@
       ],
       msg:true,
       flag1:true,//控制没有绑定学号，多次刷新只出来一个“身份绑定”的按钮
-    }
+      numList: [{
+        name: '创建房间',
+        introduce:'您可以自由创建您的房间，让其他用户加入！'
+      }, {
+        name: '进入房间',
+        introduce:'您可以依据房间码进入不同的房间！'
+      }, {
+        name: '退出房间',
+        introduce:'您可以选择退出房间，然后您的专注记录将不会提交到那个房间内！'
+      }, {
+        name: '房间信息',
+        introduce:'在这里，您可以查看你加入的房间的信息！'
+      },{
+        name: '房间记录',
+        introduce:'您可以找到您创建过的房间记录！'
+      },{
+        name: '绑定学号',
+        introduce:'我们真诚的劝您还是绑定下学号和姓名，这样您加入房间后房主就能看到您的姓名和学号了！'
+      }],
+      num: 0,//底部介绍信息控制数字
+      number:"",//用户输入的房间号
+      getIntoRoomModalName:"",//进入房间的输入窗口控制参数
+      }
 
     computed = {
       
@@ -252,13 +304,14 @@
             break;
 
           case 1:
-            this.$navigate({url:"./getRoom"})
+            //this.$navigate({url:"./getRoom"})
+            this.getIntoRoomModalName="show"
             break;
 
           case 2:
             //退出房间无需向后台发送信息
             if(this.$parent.globalData.roomId=="" || this.$parent.globalData.roomId==1){
-              this.Toast("您还未加入房间！","none",2000)
+              this.toast("您还未加入房间！","none",2000)
             }else{
               this.$parent.globalData.roomId=""
               this.$parent.globalData.roomIds=1
@@ -269,7 +322,7 @@
 
           case 3:
             if(this.$parent.globalData.roomIds==1){
-              this.Toast("您还未加入房间！","none",1000)
+              this.toast("您还未加入房间！","none",1000)
               //this.$navigate({url:"./roomMsg"})
             }else{
               this.$navigate({url:"./roomMsg?roomId="+this.$parent.globalData.roomIds})
@@ -286,6 +339,41 @@
 
         }
       },
+      numSteps(e) {
+        //console.log(e)
+        if(e.currentTarget.dataset.index==undefined){
+          //点击了"下一步"
+          this.num=this.data.num == this.data.numList.length - 1 ? 0 : this.data.num + 1
+        }else{
+          //直接点击的数字
+          this.num=e.currentTarget.dataset.index - 1
+        }
+      },
+      getIntoRoomSubmit(res){
+        var number=res.detail.value.number
+        if(!this.$parent.isNumber(number)){
+          this.toast("请正确输入房间号码！","none",2000)
+          return
+        }
+
+        if(this.$parent.globalData.roomId!="" || this.$parent.globalData.roomIds!=1){
+          //当前已经加入房间
+          if(number==this.$parent.globalData.roomId){
+            //输入的号码和当前的号码相同
+            this.toast("您已在该房间中！","none",1500)
+          }
+
+        }else{
+          //当前还没加入房间，直接向后台发送
+          this.data.number=number
+          this.getIntoRoomModalName=""
+          this.$apply()
+          this.getIntoRoomSendMessage()
+        }
+      },
+      cancel(){
+        this.getIntoRoomModalName=""
+      }
       
     }
 
@@ -333,7 +421,7 @@
       setTimeout(function(){  wx.stopPullDownRefresh()},1500)
     }
 
-    Toast(title,icon,duration){
+    toast(title,icon,duration){
       //自己封装的Toast函数
       wx.showToast({
         title:title,
@@ -345,6 +433,55 @@
     log(res){
       //自己封装的log函数
       console.log("idnex:  "+res)
+    }
+
+    getIntoRoomSendMessage(){
+      //加入房间
+      var number=this.data.number
+      var that=this
+      wx.request({
+        url: that.$parent.globalData.url + "room/getRoom",
+        method: 'POST',
+        data: {
+          "roomNumber": number,
+          "openId": that.$parent.globalData.openId
+        },
+        header: {
+          "Content-Type": "application/x-www-form-urlencoded"
+        },
+        complete: function (res) {
+          if (res.statusCode != 200) {
+            that.log("网络传输有错误！");
+            that.oast("网络出错了！","none",1000);
+          } else {
+            if(res.data==""){
+              that.toast("服务器出错！","none",1000);
+              that.$parent.globalData.roomId=""
+              that.$parent.globalData.roomIds=1
+            }else if (res.data.status == 0) {
+              //表示该房间号不存在
+              that.toast("您要找的房间不存在！","none",1500);
+              that.$parent.globalData.roomId=""
+              that.$parent.globalData.roomIds=1
+            } else if (res.data.status == 1) {
+              //成功进入
+              //console.log(res.data);
+              that.$parent.globalData.remark=res.data.remark;
+              that.$parent.globalData.roomId=number
+              that.$parent.globalData.roomIds=res.data.roomId
+              that.toast("成功加入房间！","success",1000)
+              that.$apply()
+              
+              setTimeout(function(){
+                wx.switchTab({
+                  url: './time'
+                })
+              },1888)
+            }
+
+          }
+        }
+      });
     }
     
   }

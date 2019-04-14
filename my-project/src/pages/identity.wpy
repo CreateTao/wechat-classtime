@@ -5,7 +5,7 @@
 .input{margin-bottom: 50rpx;border-radius:10rpx;border:1rpx solid #c8cccf;
 color:#6a6f77;padding:10rpx;text-align:center;}
 
-.button1{background-color:#45c8af;border-radius:40rpx;margin-top: 30rpx;}
+.button1{width:300rpx; margin-top: 80rpx; left: 100rpx;}
 
 </style>
 
@@ -29,22 +29,33 @@ color:#6a6f77;padding:10rpx;text-align:center;}
 	  		<form bindsubmit="submit">
 	  			<input class="input" type="text" name="name" placeholder="请输入姓名！"/>
 	  			<input class="input" type="number" name="id" placeholder="请输入学号！"/>
-	  			<button class="button1" form-type="submit">提交</button>
+	  			<button class="cu-btn bg-pink round lg shadow button1" form-type="submit">提交</button>
 	  	</form>
 	  	</view>
       
 	  </view>
 	  <!--work end-->
 
-    <!--introduce begain-->
-    <view class="introduce">
-      <view class="title">如何使用</view>
-      <view class="text warn">注意：身份绑定只可绑定一次，二次修改请联系管理员</view>
-      <view class="text">绑定后方可显示您的姓名，否则显示您的微信昵称</view>
-      <view class="text">姓名和学号务必都要输入！</view>
-    </view>
-    <!--introduce begain-->
 	</view>
+
+  <!--introduce begain-->
+  <view class="cu-bar bg-white solid-bottom margin-top" style="margin-top:500rpx;">
+    <view class="action">
+      <text class="icon-title text-orange"></text>这怎么用？
+    </view>
+    <view class="action">
+      <button class="cu-btn bg-green shadow" bindtap="numSteps">下一步</button>
+    </view>
+  </view>
+  <view class="bg-white padding">
+    <view class="cu-steps">
+      <view class="cu-item {{index>num?'':'text-blue'}}" wx:for="{{numList}}" wx:key>
+        <text class="num" bindtap="numSteps" data-index="{{index + 1}}"></text> {{item.name}}
+      </view>
+    </view>
+  </view>
+  <view class="introduce-text">{{numList[num].introduce}}</view>
+  <!--introduce end-->
 
 
   <view class="cu-modal {{modalName=='DialogModal1'?'show':''}}">
@@ -94,6 +105,17 @@ color:#6a6f77;padding:10rpx;text-align:center;}
       modalName:"",//控制确定选项是否弹出
       StatusBar:"",
       CustomBar:"",
+      numList: [{
+        name: '注意',
+        introduce:'身份绑定只可以使用一次，二次修改请联系管理员!'
+      }, {
+        name: '备注1',
+        introduce:'绑定后在您加入的房间内都将显示您绑定的姓名！'
+      }, {
+        name: '备注2',
+        introduce:'我们欢迎您提出任何有关系统改进的建议，您的建议都将帮助我们更好的提升系统质量！'
+      }],
+      num: 0,
     }
 
     computed = {
@@ -174,6 +196,16 @@ color:#6a6f77;padding:10rpx;text-align:center;}
       },
       cancel(){
         this.modalName=''
+      },
+      numSteps(e) {
+        //console.log(e)
+        if(e.currentTarget.dataset.index==undefined){
+          //点击了"下一步"
+          this.num=this.data.num == this.data.numList.length - 1 ? 0 : this.data.num + 1
+        }else{
+          //直接点击的数字
+          this.num=e.currentTarget.dataset.index - 1
+        }
       }
 
     }

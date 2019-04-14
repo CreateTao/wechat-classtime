@@ -302,26 +302,26 @@
                 that.toast("您的房间没人！","none",1500);
               }else{
                 console.log(res.data)
-                let msg=new Array()
-                msg=res.data.list
+                let msg=res.data.list
                 that.roomId=res.data.room.remark
                 that.remark=res.data.room.roomNumber
                 let online=0
-                for(var i=0;i<res.data.list.length;i++){
+                for(var i=0;i<msg.length;i++){
                   if(msg[i].state==1) {
                     online++;
                   }
-                  var str=msg[i].name
-                  //console.log(str.length)
-                  //考虑到后台的name可能是null，导致不能正确获得信息,添加判断
-                  //console.log(str)
-                  if(str !=null && str.length>6){
-                    //名字太长,中间用两个**代替
-                    let length=str.length
-                    let str1=str[0]+str[1]+"**"+str[length-2]+str[length-1]
-                    msg[i].name=str1
+                  
+                  let times=msg[i]
+                  if(times<60){
+                    msg[i].times=times + "秒"
+                  }else if(times<3600){
+                    msg[i]=times + "分钟"
+                  }else{
+                    msg[i]=times + "小时"
                   }
+                  
                 }
+
                 that.online=online
                 that.unonline=res.data.list.length-online
                 that.msg=msg

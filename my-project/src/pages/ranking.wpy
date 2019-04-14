@@ -1,83 +1,117 @@
 <!--排行榜-->
 <style>
-.canvas {
-  width: 700rpx;
-  height: 488rpx;
-  margin-top: 100rpx;
+
+page {
+  display: block;
+  min-height: 100%;
+  background-color: #FFFFFF;
+}
+
+
+.ranking-button{
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  background-color: #ffffff;
+}
+.default{
+  font-size: 30rpx;
+  width: 150rpx;
+  height: 50rpx;
+  border-bottom: solid 4rpx #F1F1F1;
+  text-align: center;
+}
+.choose{
+  border-bottom:solid 4rpx #7cb5ec;
 }
 
 .top-three{
-  width: 700rpx;
-  display: flex;
-  flex-direction: column;
-  border-radius: 10rpx;
-  flex-direction: column;
-}
-.top-item{
-  width: 700rpx;
-  height: 80rpx;
-  font-size: 45rpx;
+  width:700rpx;
+  height: 450rpx;
+  margin:0 0 15rpx 25rpx;  
+  background-color: #FFFFFF;
+  border:solid 4rpx #F1F1F1;
+  border-top :none;
   display: flex;
   flex-direction: row;
-  justify-content: center;
 }
-.top-item text{
-  width: 250rpx;
-  height: 100rpx;
-  line-height: 100rpx;
+
+.person{
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.person image{
+  width: 20rpx;
+  height: 20rpx;
+}
+.person text{
+  width: 180rpx;
+  height: 50rpx;
   text-align: center;
+  line-height: 50rpx;
+  font-size: 33rpx;
+  white-space:nowrap; 
+  overflow:hidden; 
+  text-overflow:ellipsis;
+}
+.person .avatar{
+ width: 130rpx;
+ height: 130rpx;
+ border-radius: 50%;
+ margin-bottom: 10rpx;
 }
 
-.ranking-button{
-  margin-top: 50rpx;
-  display: flex;
-  flex-direction: row;
+.person.center image{
+  width: 60rpx;
+  height: 50rpx;
+  margin-top: 20rpx;
 }
-.default{
-  font-size: 35rpx;
-  padding: 15rpx 50rpx;
-  margin: 3rpx 20rpx;
-  border-radius: 15rpx;
-  background-color: #CCE6FF;
-}
-.choose{
-  background-color: #7cb5ec;
+.person.center .avatar{
+ width: 150rpx;
+ height: 150rpx;
+ border-radius: 50%;
+ margin-top: -8rpx;
+ margin-bottom: 10rpx;
 }
 
-.list{
-  width: 700rpx;
+/**以下文件出自colorUI，做了自定义修改*/
+.cu-list.menu-avatar>.cu-item>.cu-avatar {
+  position: absolute;
+  left: 80rpx;
+}
+.cu-list.menu-avatar>.cu-item .content {
+  position: absolute;
+  left: 196rpx;
+  width: calc(100% - 96rpx - 60rpx - 120rpx - 20rpx);
+  line-height: 1.6em;
+}
+.cu-list.menu-avatar>.cu-item .content>.text-grey.name{
+  white-space:nowrap; 
+  overflow:hidden; 
+  text-overflow:ellipsis;
+}
+.cu-list.menu-avatar>.cu-item .rank-number{
+  position: absolute;
+  left: 0rpx;
+  width: 80rpx;
+  line-height: 1.6em;
+  text-align: center;
+  font-size: 38rpx;
+}
+.cu-list.menu-avatar>.cu-item .action {
+  width: 100rpx;
+  text-align: center;
   display: flex;
   flex-direction: column;
-  margin-bottom: 50rpx;
-  border:2rpx solid #dddee1;
-  border-top: 2rpx solid #2d8cf0;
-  border-radius: 10rpx;
+  align-items: center;
 }
-.list-item{
-  width: 100%;
-  height: 80rpx;
-  line-height: 80rpx;
-  display: flex;
-  flex-direction: row;
-  border:1rpx solid #dddee1;
-}
-.list-item text{
-  width: 200rpx;
-  height: 80rpx;
-  line-height: 80rpx;
-  text-align: center;
-  font-size: 40rpx;
-  text-overflow: ellipsis;
-  overflow: hidden;
-  white-space: nowrap;
+.cu-list.menu-avatar>.cu-item .action .like-number{
+ width:50rpx;
+ margin-top: 15rpx;
 }
 
-.myself-introduce{
-  width: 730rpx;
-  height: 300rpx;
-  border-radius: 33rpx;
-  background: linear-gradient(red, blue);
-}
 </style>
 
 <template>
@@ -90,64 +124,64 @@
   </view>
   </view>
   -->
-  
-  <!--
-  <swiper class="card-swiper round-dot" indicator-dots="true" circular="true" autoplay="true" interval="5000" duration="500" bindchange="cardSwiper" indicator-color="#8799a3" indicator-active-color="#0081ff" style="margin-top:88rpx;">
-    <swiper-item wx:for="{{swiperList}}" wx:key class="{{cardCur==index?'cur':''}}">
-      <view class="swiper-item">
-        <image src="{{item.url}}" mode="aspectFill"></image>
-      </view>
-    </swiper-item>
-  </swiper>-->
+  <!--ranking-button begain-->
+  <!--为了底部按钮被选中时的颜色条和那条灰色的能在一条线上，只能多插几个空余的vive了,用来占地方-->
+  <view class="ranking-button" style="padding-top:{{CustomBar+10}}px;">
+    <view class="default" style="width:25rpx;margin-left:25rpx;" ></view>
+    <view class="default {{button=='day'?'choose':''}}" @tap="day">TODAY</view>
+    <view class="default" style="width:100rpx;" ></view>
+    <view class="default {{button=='week'?'choose':''}}" @tap="week">WEEK</view>
+    <view class="default" style="width:100rpx;" ></view>
+    <view class="default {{button=='history'?'choose':''}}" @tap="history">ALLTIME</view>
+    <view class="default" style="width:25rpx;" ></view>
+  </view>
+  <!--ranking-button end-->
 
-  <view class="container" >
 
-    <!--<view class="myself-introduce"></view>-->
+  <!--top-three begain-->
+  <view class="top-three"> 
 
-    <canvas canvas-id="ringCanvas" class="canvas" ></canvas>  
-
-    <view class="top-three">
-
-      <view class="top-item" style="color:#7CB5EC;">
-        <text>状元：</text>
-        <text style="margin-left:25rpx;">{{one}}</text>
-      </view>
-
-      <view class="top-item" style="color:#F7A35C;">
-        <text>榜眼：</text>
-        <text style="margin-left:25rpx;">{{two}}</text>
-      </view>
-
-      <view class="top-item" style="color:#434348;">
-        <text>探花：</text>
-        <text style="margin-left:25rpx;">{{three}}</text>
-      </view>
-
+    <view class="person" style="flex:2;">
+      <image src="./image/up.png" style="margin-top: 110rpx;"></image>
+      <text style="margin-top:0;">2</text>
+      <image class="avatar" src="{{element[1]==undefined ? 'http://ppsgt1wc7.bkt.clouddn.com/v2-567dcc4ed3ea4977d541475390fc375a_r.jpg':element[1].avatarUrl}}"></image>
+      <text>{{element[1]==undefined ? '小白':element[1].name}}</text>
     </view>
 
-    <view class="ranking-button" >
-      <view class="default {{button=='day'?'choose':''}}" @tap="day">日榜</view>
-      <view class="default {{button=='week'?'choose':''}}" @tap="week">周榜</view>
-      <view class="default {{button=='history'?'choose':''}}" @tap="history">历史排行榜</view>
+    <view class="person center" style="flex:3;">
+      <image src="./image/champion.png"></image>
+      <image class="avatar" src="{{element[0]==undefined ? 'http://ppsgt1wc7.bkt.clouddn.com/p1003171602.jpg':element[0].avatarUrl}}"></image>
+      <text>{{element[0]==undefined ? 'Gal Gadot':element[0].name}}</text>
     </view>
 
-    <view class="list">
-
-      <view class="list-item" >
-        <text>排名</text>
-        <text style="margin-left:50rpx;">姓名</text>
-        <text style="margin-left:50rpx;font-size:30rpx;width:200rpx;">专注</text>
-      </view>
-
-      <view class="list-item" wx:for="{{element}}">
-        <text>{{index+1}}</text>
-        <text style="margin-left:50rpx;" class="long-hide">{{item.name}}</text>
-        <text style="margin-left:50rpx;">{{item.times}}</text>
-      </view>
-
+    <view class="person" style="flex:2;">
+      <text style="margin-top:110rpx;">3</text>
+      <image src="./image/down.png" style="margin-bottom:10rpx;"></image>
+      <image class="avatar" src="{{element[2]==undefined ? 'http://ppsgt1wc7.bkt.clouddn.com/PvhmOQI04Z.jpg':element[2].avatarUrl}}"></image>
+      <text>{{element[2]==undefined ? 'Groot':element[2].name}}</text>
     </view>
 
+  </view>
+  <!--top-three end-->
 
+  <view class="cu-list menu-avatar">
+
+    <view class="cu-item" wx:for="{{element}}">
+      <view class="rank-number">{{index+1}}</view>
+      <view class="cu-avatar round lg" style="background-image:url({{item.avatarUrl}});"></view>
+      <view class="content">
+        <view class="text-grey name">{{item.name}}</view>
+        <view class="text-gray text-sm flex">
+          <text class="text-cut">
+            <text class="icon-time text-red  margin-right-xs"></text> {{item.times}}
+          </text>
+        </view>
+      </view>
+      <view class="action">
+        <text class="icon-likefill lg text-red"></text>
+        <view class="cu-tag round bg-grey sm like-number">5</view>
+      </view>
+    </view>
 
   </view>
 
@@ -179,41 +213,9 @@
      one:"张三",
      two:"李四",
      three:"王五",
-     elements:[],//这是保存三个排行榜的数组,时间信息格式已经修改
-     elements2:[],//这是保存三个排行榜的数组，时间信息格式没有修改
+     elements:[],//这是保存三个排行榜的数组
      element:[],//这是保存用来渲染前端被选中的那个排行榜的数组
-     button:"day",//默认选择日榜
-     flag1:true,
-     cardCur: 0,
-      swiperList: [{
-        id: 0,
-        type: 'image',
-        url: 'https://ossweb-img.qq.com/images/lol/web201310/skin/big84000.jpg'
-      }, {
-        id: 1,
-        type: 'image',
-        url: 'https://ossweb-img.qq.com/images/lol/web201310/skin/big84001.jpg',
-      }, {
-        id: 2,
-        type: 'image',
-        url: 'https://ossweb-img.qq.com/images/lol/web201310/skin/big39000.jpg'
-      }, {
-        id: 3,
-        type: 'image',
-        url: 'https://ossweb-img.qq.com/images/lol/web201310/skin/big10001.jpg'
-      }, {
-        id: 4,
-        type: 'image',
-        url: 'https://ossweb-img.qq.com/images/lol/web201310/skin/big25011.jpg'
-      }, {
-        id: 5,
-        type: 'image',
-        url: 'https://ossweb-img.qq.com/images/lol/web201310/skin/big21016.jpg'
-      }, {
-        id: 6,
-        type: 'image',
-        url: 'https://ossweb-img.qq.com/images/lol/web201310/skin/big99008.jpg'
-      }]
+     button:"history",//默认选择日榜
     }
 
     computed = {
@@ -222,25 +224,30 @@
 
     methods = {
       day(){
-        //day
+        //TODAY
         this.button="day"
-        this.draw(0)
+        if(this.data.elements[0].length==0){
+          this.toast("今天还没人哦！","none",1000)
+        }
+        this.element=this.data.elements[0]
+
       },
       week(){
         //week
         this.button="week"
-        this.draw(1)
+        if(this.data.elements[1].length==0){
+          this.toast("这周还没人哦！","none",1000)
+        }
+        this.element=this.data.elements[1]
       },
       history(){
-        //year
+        //alltime
         this.button="history"
-        this.draw(2)
-      },
-      // cardSwiper
-      cardSwiper(e) {
-        this.cardCur=e.detail.current
+        if(this.data.elements[2].length==0){
+          this.toast("目前还没人哦！","none",1000)
+        }
+        this.element=this.data.elements[2]
       }
-
 
     }
 
@@ -252,16 +259,10 @@
       //生命周期函数--监听页面加载
       this.StatusBar=this.$parent.globalData.StatusBar
       this.CustomBar=this.$parent.globalData.CustomBar
-      this.getMsg()
-      this.data.flag1=false
-
     }
 
     onShow(){
-      //第一次显示的时候不调用onShow，其他每次都调用一次
-      if(!this.data.flag1){
-        this.getMsg()
-      }
+      this.getMsg()
     }
 
 
@@ -303,206 +304,41 @@
           that.toast("服务器出错！","",700)
         }else{
           //得到的数据时从大到小排列的
-          console.log(res.data)
-          that.data.elements2=res.data
           that.data.elements=res.data
-          //that.$apply()
           that.calculateTime()
-          
-          //日榜和周榜可能没有数据，为了美观，找到一个有数据的排行榜显示
-          let i=0
-          while(i<3){
-            if(res.data[i].length!=0){
-              that.draw(i)
-              if(i==0) that.button="day";
-              if(i==1) that.button="week";
-              if(i==2) that.button="history";
-              break;
-            }
-            i++
-          }
-
-          //三个排行榜都没数据则显示第一个
-          if(res.data.length==0)
-            that.draw(0);
-          
-          that.$apply()
+          console.log(res.data)
         }
       }
     })
     }
 
-    /**
-    *0代表日榜
-    *1代表周榜
-    *2代表历史排行榜
-    */
-    draw(num,res){
-      let windowWidth = 320
-      let windowHeight=0
-      let fontSize=0
-      let ratio=0
-
-      let length=this.data.elements2[num].length
-      let array=this.data.elements2[num]
-      console.log(length)
-      console.log(array)
-      //a,b,c全为零画的图不好看
-      let a=10
-      let b=10
-      let c=10
-
-      this.element=this.data.elements[num]
-      this.one="张三"
-      this.two="李四"
-      this.three="王五"
-      this.$apply()
-
-      //为前三甲赋值
-      for (let i = 0; i <3; i++) {
-        if(i <= length-1 && i==0) {
-          this.one=array[i].name
-          a=array[i].times
-        }else if(i <= length-1 && i==1) {
-          this.two=array[i].name
-          b=array[i].times
-        }else if(i <= length-1 && i==2 ){
-          this.three=array[i].name
-          c=array[i].times
-        }
-      }
-
-      try {
-          var res = wx.getSystemInfoSync();
-          windowWidth = res.windowWidth;
-          windowHeight =res.windowHeight * 0.35
-          //大致估算下圆环中心的字体大小
-          ratio=windowWidth / 414
-          fontSize=(res.fontSizeSetting + 10) * ratio 
-          //console.log(windowWidth+"---"+windowHeight+"---"+fontSize)
-      } catch (e) {
-          console.error('getSystemInfoSync failed!');
-      }
-
-      ringChart = new wxCharts({
-            animation: true,
-            canvasId: 'ringCanvas',
-            type: 'ring',
-            extra: {
-                ringWidth: 50,
-                pie: {
-                    offsetAngle: -45
-                }
-            },
-            title: {
-                name: '前三甲',
-                color: '#7cb5ec',
-                fontSize: fontSize
-            },
-            series: [{
-                name: '状元',
-                data: a,
-                stroke: false
-            }, {
-                name: '榜眼',
-                data:b,
-                 stroke: false
-            }, {
-                name: '探花',
-                data: c,
-                stroke: false
-            }],
-            disablePieStroke: true,
-            width: windowWidth,
-            height: windowHeight,
-            dataLabel: false,
-            legend: false,
-            background: '#f5f5f5',
-            padding: 0
-        });
-        ringChart.addEventListener('renderComplete', () => {
-            console.log('renderComplete');
-        });
-        setTimeout(() => {
-            ringChart.stopAnimation();
-        }, 500);
-
-        if(this.data.elements2[num].length==0) 
-          this.toast("目前还没人哦！","none",2000);
-    }
-
     calculateTime(){
-      //计算时间的格式
-      //复制this.data.elements一遍，不然怎么都是引用，就是改变不了
-      //可能是因为this.data.elements并不是一个完整的数组，用复制数组的方法不起作用
-      let str=new Array()
-      let str2=this.data.elements
-      for(let i=0;i<str2.length;i++){
-        let str3=new Array()
-        for (let j=0;j<str2[i].length;j++){
-          let obj={id:"",times:"",openId:"",name:"",schoolId:""}
-          obj.id=str2[i][j].id
-          obj.times=str2[i][j].times
-          obj.openId=str2[i][j].openId
-          obj.name=str2[i][j].name
-          obj.schoolId=str2[i][j].schoolId
-          str3[j]=obj
+      //计算时间的格式,将秒数修改为更人性化的提示
+      let str=this.data.elements
+      for(let i=0;i<3;i++){
+
+        if(str[i].length==0){
+          continue
         }
-        str[i]=str3
+
+        for(let j=0;j<str[i].length;j++){
+          let time=str[i][j].times
+
+          if(time >= 3600){
+            time= "共专注了"+Math.floor(time/3600)+"小时"
+          }else if(time >= 60 && time <3600){
+            time="共专注了"+Math.floor(time/60)+"分钟"
+          }else{
+            time="共专注了"+time+"秒"
+          }
+
+          str[i][j].times=time
+        }
       }
       //console.log(str)
-
-      //修改三个数组的时间格式
-      if(str[0].length > 0){
-        for(let j=0;j<str[0].length;j++){
-          let time=str[0][j].times
-
-          if(time >= 3600){
-            time= Math.floor(time/3600)+"小时"
-          }else if(time >= 60 && time <3600){
-            time=Math.floor(time/60)+"分钟"
-          }else{
-            time=time+"秒"
-          }
-
-          str[0][j].times=time
-        }
-      }
-
-      if(str[1].length > 0){
-        for(let j=0;j<str[1].length;j++){
-          let time=str[1][j].times
-          
-          if(time >= 3600){
-            time=Math.floor(time/3600)+"小时"
-          }else if(time >= 60 && time <3600){
-            time=Math.floor(time/60)+"分钟"
-          }else{
-            time=time+"秒"
-          }
-
-          str[1][j].times=time
-        }
-      }
-
-      if(str[2].length > 0){
-        for(let j=0;j<str[2].length;j++){
-          let time=str[2][j].times
-          
-          if(time >= 3600){
-            time=Math.floor(time/3600)+"小时"
-          }else if(time >= 60 && time <3600){
-            time=Math.floor(time/60)+"分钟"
-          }else{
-            time=time+"秒"
-          }
-
-          str[2][j].times=time
-        }
-      }
-
       this.data.elements=str
-      this.element=str[0]
+      //优先展示历史排行榜
+      this.element=str[2]
       this.$apply()
     }
     

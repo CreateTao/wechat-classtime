@@ -7,15 +7,21 @@
 .container {height: 100%;width:100%; display: flex;flex-direction: column;align-items: center;justify-content: space-between;box-sizing: border-box;}
 
 /*这里是每个页面下半部分的介绍区域的css code*/
-.introduce{width:100%;margin-top: 80rpx;}
-.title{width:100px;margin:10rpx;background-color:#2b8cf0;color:#FFFFFF;border-radius: 10rpx;padding:10rpx;text-align: center;}
-  .text{width:700rpx;background-color:#FFFFFF;padding:20rpx;font-size:30rpx;margin:15rpx;line-height: 40rpx;}
-  .warn{background-color:#ed3f14;}
+.text-light {
+  font-weight: 300;
+}
+
+.introduce-text{
+  width: 100%;
+  background-color: #ffffff;
+  color: #8799A3;
+  padding: 30rpx 10rpx 30rpx 50rpx;
+  margin-bottom:200rpx;
+  border-top: solid 3rpx #F0F0F0;
+}
 
 /*常用的输入框格式*/
-  .input{margin-bottom: 50rpx;border-radius:10rpx;border:1rpx solid #c8cccf;
-color:#6a6f77;padding:10rpx;text-align:center;width: 500rpx;height: 80rpx;
-line-height: 80rpx;}
+  .input{margin-bottom: 50rpx;border-radius:10rpx;border:1rpx solid #c8cccf;color:#6a6f77;padding:10rpx;text-align:center;width: 500rpx;height: 100rpx;line-height: 80rpx;font-size: 35rpx;}
 
 /*用来做记录展示页底部的分页框*/
  .record-bottom{width: 700rpx;height: 50rpx;display: flex;flex-direction: row;align-items: center;margin-top: 30rpx;}
@@ -147,14 +153,36 @@ export default class extends wepy.app {
   }
 
   isNumber(val) { 
-      var regPos = /^\d+(\.\d+)?$/; //非负浮点数
-      var regNeg = /^(-(([0-9]+\.[0-9]*[1-9][0-9]*)|([0-9]*[1-9][0-9]*\.[0-9]+)|([0-9]*[1-9][0-9]*)))$/; //负浮点数
-      if(regPos.test(val) || regNeg.test(val)) {
-          return true;
-      } else {
-          return false;
-      }
+    var regPos = /^\d+(\.\d+)?$/; //非负浮点数
+    var regNeg = /^(-(([0-9]+\.[0-9]*[1-9][0-9]*)|([0-9]*[1-9][0-9]*\.[0-9]+)|([0-9]*[1-9][0-9]*)))$/; //负浮点数
+    if(regPos.test(val) || regNeg.test(val)) {
+        return true;
+    } else {
+        return false;
     }
+  }
+
+    /**
+   * wxPromisify
+   * @fn 传入的函数，如wx.request、wx.download
+   */
+  wxPromisify(fn) {
+    return function (obj = {}) {
+      return new Promise((resolve, reject) => {
+        obj.success = function (res) {
+          resolve(res)
+        }
+
+        obj.fail = function (res) {
+          reject(res)
+        }
+
+        fn(obj)//执行函数，obj为传入函数的参数
+      })
+    }
+    
+  }
+
 
 }
 </script>

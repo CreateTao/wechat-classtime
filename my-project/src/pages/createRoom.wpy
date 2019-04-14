@@ -4,7 +4,8 @@
 
   .form{margin-top: 80rpx;}
 
-  .button1{background-color:#45c8af;border-radius:40rpx;margin-top: 80rpx;width:250rpx;}
+  .button1{width:300rpx; margin-top: 80rpx; left: 100rpx;}
+
 </style>
 
 <template>
@@ -15,46 +16,59 @@
     </navigator>
   </view>
   </view>
+
+
   <view class="container">
     <view class="notice" wx:if="{{roomId!=''}}">您的房间号为:{{roomId}}</view>
 
     <form bindsubmit="create" class="form">
       <input class="input" name="remark" type="text" placeholder="{{pla1}}"/>
       <input type="text" name="number" class="input" placeholder="{{pla2}}"/>
-      <button class="button1" form-type="submit">创建</button>
+      <button class="cu-btn bg-pink round lg shadow button1" form-type="submit">创建</button>
     </form> 
-
-    <view class="introduce">
-      <view class="title">如何使用</view>
-      <view class="text">房间备注可以是课程名或者您自定义的信息</view>
-      <view class="text">您也可以不输入房间备注</view>
-      <view class="text">房间号你可以输入1000-9999之间的任意数</view>
-      <view class="text">房间号你也可以不输入，我们给您生成三位房间号</view>
-      <view class="text">假若您已进入房间，创建成功后会退出该房间</view>
-      <view class="text">创建成功会返回房间号码，其他用户凭此号码可进入您的房间</view>
-    </view>
 
 </view>
 
-  <view class="cu-modal {{modalName=='DialogModal1'?'show':''}}">
-    <view class="cu-dialog">
-      <view class="cu-bar bg-white justify-end">
-        <view class='content'>请确认</view>
-        <view class='action' bindtap="cancel">
-          <text class='icon-close text-red'></text>
-        </view>
+<!--introduce begain-->
+<view class="cu-bar bg-white solid-bottom margin-top" style="margin-top:500rpx;">
+  <view class="action">
+    <text class="icon-title text-orange"></text>这怎么用？
+  </view>
+  <view class="action">
+    <button class="cu-btn bg-green shadow" bindtap="numSteps">下一步</button>
+  </view>
+</view>
+<view class="bg-white padding">
+  <view class="cu-steps">
+    <view class="cu-item {{index>num?'':'text-blue'}}" wx:for="{{numList}}" wx:key>
+      <text class="num" bindtap="numSteps" data-index="{{index + 1}}"></text> {{item.name}}
+    </view>
+  </view>
+</view>
+<view class="introduce-text">{{numList[num].introduce}}</view>
+<!--introduce end-->
+
+<!--model begain-->
+<view class="cu-modal {{modalName=='DialogModal1'?'show':''}}">
+  <view class="cu-dialog">
+    <view class="cu-bar bg-white justify-end">
+      <view class='content'>请确认</view>
+      <view class='action' bindtap="cancel">
+        <text class='icon-close text-red'></text>
       </view>
-      <view class='padding-xl'>
-        您将退出该房间并新建房间！
-      </view>
-      <view class="cu-bar bg-white justify-end">
-        <view class='action'>
-          <button class='cu-btn line-green text-green' bindtap='cancel'>取消</button>
-          <button class='cu-btn bg-green 'style="margin-left:390rpx;" bindtap='confirm'>确定</button>
-        </view>
+    </view>
+    <view class='padding-xl'>
+      您将退出该房间并新建房间！
+    </view>
+    <view class="cu-bar bg-white justify-end">
+      <view class='action'>
+        <button class='cu-btn line-green text-green' bindtap='cancel'>取消</button>
+        <button class='cu-btn bg-green 'style="margin-left:390rpx;" bindtap='confirm'>确定</button>
       </view>
     </view>
   </view>
+</view>
+<!--model end-->
 
 
 </template>
@@ -84,6 +98,20 @@
      number:"",
      StatusBar:"",
      CustomBar:"",
+     numList: [{
+        name: '房间备注',
+        introduce:'房间备注可以是课程名或者您自定义的信息！!!您也可以不输入房间备注!'
+      }, {
+        name: '房间号',
+        introduce:'房间号你可以输入1000-9999之间的任意数！!!房间号你也可以不输入，我们给您生成三位房间号!'
+      }, {
+        name: '备注1',
+        introduce:'假若您已进入房间，创建成功后会退出该房间'
+      }, {
+        name: '备注2',
+        introduce:'创建成功会返回房间号码，其他用户凭此号码可进入您的房间'
+      }],
+      num: 0,
     }
 
     computed = {
@@ -134,6 +162,16 @@
       },
       cancel(){
         this.modalName=""
+      },
+      numSteps(e) {
+        //console.log(e)
+        if(e.currentTarget.dataset.index==undefined){
+          //点击了"下一步"
+          this.num=this.data.num == this.data.numList.length - 1 ? 0 : this.data.num + 1
+        }else{
+          //直接点击的数字
+          this.num=e.currentTarget.dataset.index - 1
+        }
       }
     }
 

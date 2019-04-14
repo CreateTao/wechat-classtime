@@ -28,6 +28,14 @@
   padding-left: 30rpx;
   border:1rpx solid #8799A3;
 }
+
+/**以下格式来自colorUI，进行了自定义适配**/
+.cu-list.menu-avatar>.cu-item .content {
+  position: absolute;
+  left: 50rpx;
+  width: calc(100% - 96rpx - 60rpx - 120rpx - 20rpx);
+  line-height: 1.6em;
+}
 </style>
 
 <template>
@@ -39,14 +47,28 @@
   </view>
   </view>
 
-	<view class="container">
-   <view class="work">
-    <view class="record" wx:for="{{msg}}" @tap="room" data-id="{{item[0]}}">
-      <view class="item">课程：{{item[1]}}</view>
-      <view class="item">进入房间人数：{{ item[2] }}</view>
-      <view class="item">创建时间：{{ item[3] }}</view>
+  <view style="height:950rpx;background-color:#FFFFFF;">
+  <view class="cu-list menu-avatar" wx:for="{{msg}}" @tap="room" data-id="{{item[0]}}">
+
+    <view class="cu-item">
+      <view class="content">
+        <view class="text-grey">课程：{{item[1]}}</view>
+        <view class="text-gray text-sm flex">
+          <text class="text-cut">
+              <text class="icon-time text-red  margin-right-xs"></text> 创建时间：{{ item[3] }}
+          </text>
+        </view>
+      </view>
+      <view class="action">
+        <view class="text-grey text-xs">房间人数</view>
+        <view class="cu-tag round bg-{{item[2]<10?'grey':'red'}} sm">{{ item[2] }}</view>
+      </view>
     </view>
-   </view> 
+
+  </view>
+  </view>
+
+	<view class="container">
    <!--page begain-->
    <view class="record-bottom">
       <view class="re-bo-item" bindtap="last">
@@ -63,14 +85,6 @@
    </view>
   <!--page end-->
   </view>
-
-  <view class="introduce" style="margin-top:50rpx;">
-    <view class="title">备注</view>
-    <view class="text">下拉可刷新</view>
-    <view class="text">点击房间可查看房间详情</view>
-  </view>
-
-
 
 </template>
 
@@ -186,6 +200,10 @@
                      that.total=res.data.totalPages
 
                       var i = res.data.content.length;
+                      if(i==0){
+                        that.toast("暂无记录！","none",1000)
+                      }
+
                       var msg = new Array(i);
                       var j = 0
                       for (j = 0; j < i; j++) {
@@ -199,7 +217,7 @@
                       }
                       //that.toast("点击查看详情","success",1000);
                       that.msg=msg
-                      console.log(that.data.msg)
+                      console.log(msg)
                       that.$apply()
 
                   }

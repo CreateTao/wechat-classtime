@@ -70,7 +70,7 @@
   <!--system introduce begain-->
   <swiper class="screen-swiper square-dot sys-intro" indicator-dots="true" circular="true" autoplay="true" interval="5000" duration="500">
     <swiper-item wx:for="{{7}}" wx:key>
-      <image src="./image/index/{{index+1}}.jpg" mode='aspectFill'></image>
+      <image src="http://ppsgt1wc7.bkt.clouddn.com/{{index+1}}.jpg" mode='aspectFill'></image>
     </swiper-item>
   </swiper>
   <!--system introduce end-->
@@ -94,8 +94,8 @@
 
   <!--introduce begain-->
   <view class="cu-timeline" style="background-color:#F1F1F1;margin-top:50rpx;">
-    <view class="cu-time" style="width:200rpx;font-size:27rpx;">我是什么？</view>
-    <view class='cu-item cur icon-noticefill'>
+    <view class="cu-time" style="width:200rpx;font-size:27rpx;">这怎么用？</view>
+    <view class='cu-item cur text-green icon-noticefill'>
       <view class="content bg-green shadow-blur">
         “专注”：随时随地记录专注信息！
       </view>
@@ -123,7 +123,7 @@
     <view class="cu-dialog">
       <view class="cu-bar bg-white justify-end">
         <view class='content'>尊敬的用户您好</view>
-        <button class='action' open-type="getUserInfo" bindgetuserinfo="bindGetUserInfo">
+        <button class='action' @tap="cancelModel">
           <text class='icon-close text-red'></text>
         </button>
       </view>
@@ -168,31 +168,6 @@
      flag1:0,//在addnickName()中控制setTimeOut的等待时间
      flag: true,//控制this.getUserOpenid();函数只执行一次
      cardCur: 0,
-     swiperItem:[{
-      id:0,
-      color:"bg-gradual-blue",
-      name:"专注时间",
-      icon:"./image/4.png",
-      english:"StudyHard"
-     },{
-      id:1,
-      color:"bg-gradual-pink",
-      name:"无机课堂",
-      icon:"./image/1.png",
-      english:"NoPhone"
-     },{
-      id:2,
-      color:"bg-gradual-green",
-      name:"排行榜",
-      icon:"./image/2.png",
-      english:"Ranking"
-     },{
-      id:3,
-      color:"bg-gradual-orange",
-      name:"我的记录",
-      icon:"./image/5.png",
-      english:"Record"
-     }],
      TabCur: 0,
       scrollLeft:0,
       modelShow:"",
@@ -213,12 +188,12 @@
         this.modelShow=""
         if(e.detail.userInfo != undefined){
           //获得用户授权后
-          this.$prent.globalData.userInfo=e.detail.userInfo
+          this.$parent.globalData.userInfo=e.detail.userInfo
           this.userInfo=e.detail.userInfo
           this.canIUse=true
           this.getUserOpenid()
         }else{
-          that.toast("请授权！！！","none",1500)
+          this.toast("您拒绝授权了！","none",1000)
         }
       },
        cancelModel(){
@@ -244,31 +219,7 @@
       this.StatusBar=this.$parent.globalData.StatusBar
       this.CustomBar=this.$parent.globalData.CustomBar
 
-      var that=this
-      // 查看是否授权
-      wx.getSetting({
-        success(res) { 
-          //console.log(res)
-          if (res.authSetting['scope.userInfo']) {
-            // 已经授权，可以直接调用 getUserInfo 获取头像昵称
-            wx.getUserInfo({
-              success(res) {
-                console.log("wx.getUserInfo返回如下信息")
-                console.log(res)
-                that.userInfo=res.userInfo
-                that.$parent.globalData.userInfo=res.userInfo
-                that.$apply() 
-                that.getUserOpenid()
-              }
-            })
-          }else{
-            that.canIUse=false
-            that.modelShow="show"
-            console.log("未授权！")
-            that.$apply() 
-          }
-        }
-      })
+      this.getUserOpenid()
 
       //this.$navigate({url:"./ranking"})
     }
@@ -276,7 +227,7 @@
 
     onPullDownRefresh(){
       //页面相关事件处理函数--监听用户下拉动作
-      this.log("onPullDownRefresh")
+      console.log("onPullDownRefresh")
       this.getUserOpenid()
 
       setTimeout(function(){  wx.stopPullDownRefresh()},1500)
@@ -292,17 +243,12 @@
         duration:duration
       })
     }
-
-    log(res){
-      //自己封装的log函数
-      console.log("index2:  "+res)
-    }
     
     getUserOpenid() {
       var that = this;
       wx.login({
         success: function (res) {
-          that.log("your code is---"+res.code);
+          console.log("your code is---"+res.code);
 
           wx.request({
             url: that.$parent.globalData.url +"user/getOpenId",
@@ -313,14 +259,14 @@
             },
             complete: function (res) {
               if (res.statusCode != 200) {
-                that.log("res.statusCode != 200");
+                console.log("res.statusCode != 200");
                 that.toast("服务器出错！","none",1000)
                 return;
               } else if(res.data==""){
                 that.toast("服务器出错！","none",1000)
               }else{
                 that.$parent.globalData.openId = res.data.openid;
-                that.log("your openId is---"+that.$parent.globalData.openId);
+                console.log("your openId is---"+that.$parent.globalData.openId);
                 //console.log(res.data)
                 if(res.data.status=="no"){
                   //没绑定学号
@@ -331,21 +277,16 @@
                   that.$parent.globalData.schoolId=res.data.schoolId
                   that.$parent.globalData.schoolName=res.data.schoolName
                 }
-                
-                if(!res.data.userMsgComplete){
-                  //给后台传送一遍个人信息
-                  that.updateUserMsg()
-                }else if(res.data.avatarUrl!=that.$parent.globalData.userInfo.avatarUrl){
-                  that.updateUserMsg()
-                }else if(res.data.nickName!=that.$parent.globalData.userInfo.nickName){
-                  that.updateUserMsg()
-                }
+
+                that.updateUserMsg(res.data.userMsgComplete,res.data.avatarUrl,res.data.nickName)
 
                 //是否和常用设备不符合
                 let system=wx.getSystemInfoSync()
                 if(system.model!=res.data.model){
                   that.addModel()
                 }
+
+                //wx.navigateTo({url:"./index"})
 
               }
             }
@@ -356,20 +297,47 @@
      //this.$navigate({url:"./roomMsg?roomId=99"})
     }
 
-    updateUserMsg(){
+    updateUserMsg(userMsgComplete,avatarUrl,nickName){
       //保存昵称
       //把addNickName和addModel分开发送，避免一个函数执行失败造成回滚，两个信息都无法保存
       var that=this
-      setTimeout(function(){
-        if(that.$parent.globalData.userInfo=="" || that.$parent.globalData.openId==""){
-          //网络没能加载成功，等待一秒钟再试
-          //防止特殊情况，导致getUserOpenid()为执行或者为返回出现错误
-          that.data.flag1++
-          that.updateUserMsg()
-        }else if(that.data.flag1 >5){
-          that.toast("获取您的信息失败！","none",2000)
-        }else{
-           wx.request({
+
+      new Promise(function(resolve,reject){
+        // 查看是否授权
+        wx.getSetting({
+          success(res) { 
+            //console.log(res)
+            if (res.authSetting['scope.userInfo']) {
+              // 已经授权，可以直接调用 getUserInfo 获取头像昵称
+              wx.getUserInfo({
+                success(res) {
+                  console.log("wx.getUserInfo返回如下信息")
+                  console.log(res)
+                  that.userInfo=res.userInfo
+                  that.$parent.globalData.userInfo=res.userInfo
+                  that.$apply() 
+                  resolve(res.userInfo)
+                }
+              })
+            }else{
+              //只弹出一次提示窗口
+              let authorityNum=wx.getStorageSync('authorityNum')
+              if(authorityNum != 1){
+               that.modelShow="show"
+               wx.setStorageSync('authorityNum', '1')
+              }
+              that.canIUse=false
+              that.$apply() 
+              reject()
+            }
+          }
+        })
+
+      }).then(res=>{
+        
+        if(!userMsgComplete || avatarUrl != res.avatarUrl || nickName != res.nickName){
+          //个人信息不完整或者信息发生变化
+          wx.request({
             url: that.$parent.globalData.url +"user/updateUserMsg",
             method: 'POST',
             data: { 'openId':  that.$parent.globalData.openId,
@@ -382,16 +350,21 @@
             },
             complete: function (res) {
               if (res.statusCode != 200) {
-                that.log("addNinckNmae res.statusCode != 200"+res);
+                console.log("addNinckNmae res.statusCode != 200"+res);
                 //that.toast("服务器出错！","none",3000)
                 return;
               } else{
-                that.log("updateUserMsg return successful!")
+                console.log("updateUserMsg return successful!")
               }
             }
           })
+
         }
-      },1000)
+
+      }).catch(res=>{
+        console.log("未授权！")
+      })
+      
     }
 
     addModel(){
@@ -416,11 +389,11 @@
         },
         complete: function (res) {
           if (res.statusCode != 200) {
-            that.log("addModel res.statusCode != 200"+res);
+            console.log("addModel res.statusCode != 200"+res);
             //that.toast("服务器出错！","none",3000)
             return;
           } else{
-            that.log("addModel return successful!")
+            console.log("addModel return successful!")
           }
         }
       })

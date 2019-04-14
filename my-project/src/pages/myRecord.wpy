@@ -4,12 +4,37 @@
 .work{margin-top: 60rpx;width: 90%;height: 800rpx;background-color: #f8f8f9;}
 .page{width: 90%;height:100rpx;margin-top: 30rpx;}
 
-.year{width:180rpx;font-size: 45rpx;background-color:#45c8af;padding-left: 55rpx;margin:20rpx 0 0 50rpx;}
 .month{width: 100rpx;margin-left: 40rpx;margin-top: 10rpx;background-color: #45c8af;border-radius:10rpx;padding-left:25rpx;}
 .day_item{display: flex;flex-direction: row;font-size: 30rpx;margin-bottom: 10rpx; padding-top: 10rpx;}
 .day{padding-left: 55rpx;width:100rpx;border-right:5rpx solid rgb(21, 77, 87)}
 .view1{width:80rpx;margin-left: 20rpx;}
 .view2{width:200rpx;margin-left: 20rpx;}
+
+.cu{
+  height: 1000rpx;
+  background-color: #ffffff;
+  overflow:scroll;
+}
+.text{
+  width: 200rpx;
+  margin-left: 30rpx;
+  text-align: center;
+  background-color: #8DC63F;
+  white-space:nowrap; 
+  overflow:hidden; 
+  text-overflow:ellipsis;
+}
+/**以下格式摘自colorUI，做了自定义适配**/
+.cu-timeline .cu-time{
+  width: 150rpx;
+  text-align: center;
+  padding: 10rpx 0;
+  margin-left: 20rpx;
+  font-size: 40rpx;
+  color: #8799A3;
+  display: block;
+}
+
 </style>
 
 <template>
@@ -21,22 +46,26 @@
   </view>
   </view>
 
-	<view class="container">
-    <!--<button class="button" @tap="iCreateRoom">我创建的房间</button>-->
-   <view class="work">
-    <view wx:for="{{msg}}">
-      <view class="year" wx:if="{{item[0]!=0}}" >{{item[0]}}</view>
-      <view class="month" wx:if="{{item[1]!=0}}"  >{{item[1]}}</view>
-      <view class="day_item" >
-          <view class="day" >{{item[2]}}</view>
-          <view class="view1">专注</view>
-          <view class="view2">{{item[3]}}-{{item[4]}}</view>
-          <view class="view1" style="width:110rpx;">{{item[5]}}</view>
-          <view class="view1">{{item[6]}}次</view>
+  <!--myRecord msg begain-->
+  <view class="cu">
+  <view class="cu-timeline" wx:for="{{msg}}">
+
+    <view class="cu-time" wx:if="{{item[0]!=0}}">{{item[0]}}年</view>
+    <view class="cu-time" style="font-size:36rpx;" wx:if="{{item[1]!=0}}">{{item[1]}}月</view>
+    <view class="cu-item cur text-mauve icon-time">
+      <view class="content bg-olive shadow-blur">
+        <text class="text" space="emsp" style="margin-left: 10rpx;">{{item[2]}}日 {{item[3]}}-{{item[4]}}</text>
+        <text class="text">专注{{item[5]}}</text>
+        <text class="text">暂停{{item[6]}}次</text>
       </view>
     </view>
-   </view>
 
+  </view>
+  </view>
+  <!--myRecord msg end-->
+
+  <!--button begain-->
+	<view class="container"> 
    <view class="record-bottom">
     <view class="re-bo-item" bindtap="last">
       <view class='icon-back lg text-gray' ></view>
@@ -50,8 +79,8 @@
       <view >下一页</view>
     </view>
   </view>
-     
-  </view>
+</view>
+<!--button end-->
 
 
 </template>
@@ -169,6 +198,9 @@
             that.totalElements=res.data.totalElements
             that.total=res.data.totalPages
             var i = res.data.content.length;
+            if(i==0){
+              that.toast("您暂无记录！","none",1000);
+            }
             var msg = new Array(i);
             if(i!=0){
               var k = res.data.content[0].dates.split(".")[0];
@@ -177,6 +209,8 @@
             }
             for (var j = 0; j < i; j++) {
                 msg[j] = new Array(7)
+                //数组中7个值分别有如下含义
+                //当计时比较短时，可能会有开始和结束同样值，因为舍弃了单位秒
                 //year,month,date,begain,ends,times,pause
 
                 var dates = res.data.content[j].dates.split(".");
@@ -216,7 +250,15 @@
                 msg[j][2] = dates[2];
                 msg[j][3] = begain[0] + ":" + begain[1];
                 msg[j][4] = ends[0] + ":" + ends[1];
-                msg[j][5] = times;
+
+                if(times<60){
+                  msg[j][5] = times + "秒"
+                }else if(times<3600){
+                  msg[j][5] = times%60 + "分钟"
+                }else{
+                  msg[j][5] = times%3600 + "小时"
+                }
+
                 msg[j][6] = pause;
 
             }

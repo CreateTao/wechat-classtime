@@ -1,7 +1,7 @@
 <!--进入房间-->
 <style>
   .work{margin-top: 100rpx;}
-  .button1{background-color:#45c8af;border-radius:40rpx;margin-top: 80rpx;width:250rpx;}
+  .button1{width:300rpx; margin-top: 80rpx; left: 100rpx;}
 </style>
 
 <template>
@@ -17,14 +17,9 @@
    <view class="work">
      <form bindsubmit="submit">
       <input class="input" type="number" name="number" placeholder="{{pla1}}"/>
-      <button class="button1" form-type="submit">加入</button>
+      <button class="cu-btn bg-pink round lg shadow button1" form-type="submit">加入</button>
      </form>
    </view> 
-
-   <view class="introduce">
-     <view class="title">使用说明</view>
-     <view class="text">当您加入房间的时候，会自动退出原来的房间，假若您以前加入过房间并且还未退出。</view>
-   </view>
    
   </view>
 

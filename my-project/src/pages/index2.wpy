@@ -264,8 +264,12 @@
                 return;
               } else if(res.data==""){
                 that.toast("服务器出错！","none",1000)
+              }else if(res.data.errcode!=0){
+                //腾讯服务器返回不正常
+                that.toast("服务器失联，请稍后重试！","none",1333)
               }else{
-                that.$parent.globalData.openId = res.data.openid;
+
+                that.$parent.globalData.openId = res.data.openId;
                 console.log("your openId is---"+that.$parent.globalData.openId);
                 //console.log(res.data)
                 if(res.data.status=="no"){

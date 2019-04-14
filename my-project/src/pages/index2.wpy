@@ -49,6 +49,14 @@
   height: 100rpx;
 }
 
+.feed-title{
+  font-size: 30rpx;
+  color: rgb(253, 122, 0);
+  text-align: center;
+  text-decoration:underline;
+  margin-top: 30rpx;
+}
+
 
 </style>
 
@@ -91,6 +99,8 @@
     <image src="./image/5.png"></image>
   </view>
   <!--button-->
+
+  <view class='feed-title' @tap="myFeed">反馈意见</view>
 
   <!--introduce begain-->
   <view class="cu-timeline" style="background-color:#F1F1F1;margin-top:50rpx;">
@@ -207,7 +217,11 @@
       },
       fingerprint(){
         this.toast("该功能暂未上线！","none",888)
-      }
+      },
+
+      myFeed(){
+        this.$navigate({url:"./myFeed"})
+      },
       
     }
 
